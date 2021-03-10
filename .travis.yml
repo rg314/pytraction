@@ -1,0 +1,11 @@
+language: python
+python:
+  - "3.8"
+# command to install dependencies
+install:
+  - pip install codecov
+  - python setup.py install
+script:
+  - python setup.py test
+after_success:
+  - codecov -t $CODECOV_TOKEN
