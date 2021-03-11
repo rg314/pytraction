@@ -35,6 +35,6 @@ options = {
     'setup_requires': SETUP_REQUIRES,
     'test_requires': TESTS_REQUIRES,
     'install_requires': REQUIREMENTS,
-    'package_data': DATA,
+    # 'package_data': DATA,
 }
 setup(**options)
