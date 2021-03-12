@@ -11,10 +11,9 @@ def allign_slice(img, ref):
     """
     # amount to reduce template
     depth = 20
-    ref = ref[depth:-depth, depth:-depth]
 
     # calculate matchTemplate using ccorr_normed method
-    tm_ccorr_normed = cv2.matchTemplate(img,ref,cv2.TM_CCORR_NORMED)
+    tm_ccorr_normed = cv2.matchTemplate(img,ref[depth:-depth, depth:-depth],cv2.TM_CCORR_NORMED)
     max_ccorr = np.unravel_index(np.argmax(tm_ccorr_normed, axis=None), tm_ccorr_normed.shape)
 
     # shifts in the x and y

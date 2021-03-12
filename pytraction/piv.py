@@ -7,8 +7,9 @@ from openpiv import tools, pyprocess, validation, filters, scaling
 class PIV(object):
 
     def __init__(self, window_size=64, search_area_size=64, overlap=32, dt=1, scaling_factor = None):
-        self.scaling_factor = window_size
-        self.window_size = search_area_size
+        self.scaling_factor = scaling_factor
+        self.window_size = window_size
+        self.search_area_size = search_area_size
         self.overlap = overlap
         self.dt = dt
 
@@ -26,7 +27,7 @@ class PIV(object):
             overlap=self.overlap, 
             dt=self.dt, 
             search_area_size=self.search_area_size, 
-            sig2noise_method=sig2noise)
+            sig2noise_method=sig2noise_method)
 
         # prepare centers of the IWs to know where locate the vectors
         x, y = pyprocess.get_coordinates(img.shape, 
@@ -45,7 +46,7 @@ class PIV(object):
         # rescale the results to millimeters and mm/sec
         if self.scaling_factor:
             x, y, u, v = scaling.uniform(x, y, u, v, 
-                                        scaling_factor=self.scaling_factor )
+                                        scaling_factor=self.scaling_factor)
 
         # save the data
         x, y, u, v = tools.transform_coordinates(x, y, u, v)
