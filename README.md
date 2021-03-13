@@ -3,7 +3,7 @@
 # pytraction
 Bayesian Traction Force Microscopy
 
-Motivation: TFM data is annoying, disperse tools set (all in matlab / java)
+Motivation: TFM data is annoying, disperse tool set (all in matlab / java / javascript)
 
 PyTraction: Modern software and easy to use end-to-end
 
