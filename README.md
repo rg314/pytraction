@@ -62,6 +62,8 @@ Output:
 
 ![image](https://user-images.githubusercontent.com/35999546/111041793-ee3a6380-8431-11eb-906f-6698aaa6ba03.png)
 
+L = 141.3021 for matlab
+L = 138.9749 for python
 
 ## Amazing references
 Here is a list of common resources that have been used
