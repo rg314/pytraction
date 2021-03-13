@@ -37,3 +37,13 @@ Install autoballs in editable mode
 pip install -e .
 ```
 
+## Amazing references
+Here is a list of common resources that have been used
+
+1. [Imagej piv](https://sites.google.com/site/qingzongtseng/piv)
+2. [Easy-to-use_TFM_package](https://github.com/CellMicroMechanics/Easy-to-use_TFM_package)
+3. [openpiv-python](http://www.openpiv.net/openpiv-python/)
+4. [opencv-python](https://opencv-python-tutroals.readthedocs.io/en/latest/index.html)
+5. [A great paper from Sabass lab](https://www.nature.com/articles/s41598-018-36896-x)
+6. [Template matching](https://sites.google.com/site/qingzongtseng/template-matching-ij-plugin/tuto2)
+
