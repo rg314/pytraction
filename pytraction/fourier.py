@@ -64,8 +64,8 @@ def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
 
 
     # Fourier transform displacement field
-    ftux = np.fft.fft2(u[:,:,0])
-    ftuy = np.fft.fft2(u[:,:,1])
+    ftux = np.fft.fft2(u[:,:,0]).T
+    ftuy = np.fft.fft2(u[:,:,1]).T
 
     fux1 = ftux.reshape(i_max*j_max,1)
     fux2 = ftuy.reshape(i_max*j_max,1)

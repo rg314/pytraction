@@ -47,7 +47,8 @@ from functools import partial
 
 from scipy.sparse import spdiags, csr_matrix
 from scipy.linalg import cholesky
-from scipy.optimize import fminbound
+import scipy.optimize as optimize
+import time 
 
 from pytraction.reg_fourier import reg_fourier_tfm
 
@@ -95,12 +96,13 @@ def optimal_lambda(beta,fuu,Ftux,Ftuy,E,s,cluster_size,i_max, j_max,X,sequence):
 
     print('Optimizing Lambda')
     target = partial(minus_logevidence, beta=beta, C_a=C_a, BX_a=BX_a, X=X, fuu=fuu, constant=constant, Ftux=Ftux,Ftuy=Ftuy,E=E,s=s,cluster_size=cluster_size,i_max=i_max, j_max=j_max)
-    alpha_opt = fminbound(target, alpha1, alpha2)
-
+    start = time.time()
+    alpha_opt = optimize.fminbound(target, alpha1, alpha2, xtol=1e-20, disp=3, maxfun=8)
+    end = time.time()
+    print(f'Time taken {end-start} s')
 
     evidence_one = -target(alpha_opt)
     lambda_2 = alpha_opt/beta
-
 
     return lambda_2,None,evidence_one
 
