@@ -12,6 +12,7 @@ from pytraction.piv import PIV
 from pytraction.fourier import fourier_xu
 
 from openpiv import tools, pyprocess, validation, filters, scaling 
+from scipy.io import loadmat
 
 
 frame = 0
@@ -24,37 +25,20 @@ E = 100 # Young's modulus in Pa
 s = 0.3 # Poisson's ratio
 
 
-# load data from ryan
-rg_file = glob.glob('data/*')
+data = loadmat('/Users/ryan/Documents/GitHub/Easy-to-use_TFM_package/test_data/input_data.mat')
 
+pos, vec = data['input_data'][0][0][0][0][0]
 
-img1 = [x for x in rg_file if 'ref' not in x][0]
-ref1 = [x for x in rg_file if 'ref' in x][0]
-
-img1 = io.imread(img1)
-ref1 = io.imread(ref1)
-
-frame_a= np.array(img1[frame, channel, :, :], dtype='uint8')
-frame_b = np.array(ref1[channel,:,:], dtype='uint8')
-
-
-frame_a = allign_slice(frame_a, frame_b)
-
-
-img = np.stack([frame_b, frame_a])
-
-io.imsave('test.tif',img)
-
-piv_obj = PIV(window_size=32, search_area_size=32, overlap=16)
-x, y, u, v = piv_obj.base_piv(frame_a, frame_b)
-
+x, y = pos.T
+u, v = vec.T
 
 # plt.quiver(x,y,u,v)
 # plt.imshow(frame_a)
 # plt.show()
 
 noise = 7
-xn, yx, un, vn = x[:noise,:noise],y[:noise,:noise],u[:noise,:noise],v[:noise,:noise]
+# xn, yx, un, vn = x[:noise,:noise],y[:noise,:noise],u[:noise,:noise],v[:noise,:noise]
+xn, yx, un, vn = x[:noise],y[:noise],u[:noise],v[:noise]
 noise_vec = np.array([un.flatten(), vn.flatten()])
 
 varnoise = np.var(noise_vec, axis=1)

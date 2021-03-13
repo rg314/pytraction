@@ -1,5 +1,5 @@
 from pytraction.interp_vec2grid import interp_vec2grid
-
+import numpy as np
 
 def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
     
@@ -9,29 +9,36 @@ def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
     # will be constructed. Otherwise the grid in grid_mat will be used.
     grid_mat,u, i_max,j_max = interp_vec2grid(new_pos, vec, meshsize, grid_mat)
 
+    # shapes might be off here!
 #   %construct wave vectors
-#   kx_vec = 2*pi/i_max/meshsize.*[0:(i_max/2-1) (-i_max/2:-1)];
-#   ky_vec = 2*pi/j_max/meshsize.*[0:(j_max/2-1) (-j_max/2:-1)];
-#   kx = repmat(kx_vec',1,j_max);
-#   ky = repmat(ky_vec,i_max,1);
-    
+    kx_vec = 2*np.pi/i_max/meshsize*np.concatenate([np.arange(0,(i_max-1)/2), -np.arange(i_max/2,0, -1)])
+    kx_vec = np.expand_dims(kx_vec, axis=0)
+    ky_vec = 2*np.pi/j_max/meshsize*np.concatenate([np.arange(0,(j_max-1)/2), -np.arange(j_max/2,0, -1)])
+    ky_vec = np.expand_dims(ky_vec, axis=0)
+
+    kx = np.tile(kx_vec.T, (1,j_max))
+    ky = np.tile(ky_vec, (i_max, 1))
+
 #   %We ignore DC component below and can therefore set k(1,1) =1
-#   kx(1,1) = 1;
-#   ky(1,1) = 1;
-#   k = sqrt(kx.^2+ky.^2);
+    kx[0,0] = 1
+    ky[0,0] = 1
+    k = np.sqrt(kx**2 + ky**2)
   
 #   %calculate Green's function
-#   conf = 2.*(1+s)./(E.*k.^3);
-#   Gf_xx = conf .* ((1-s).*k.^2+s.*ky.^2);
-#   Gf_xy = conf .* (-s.*kx.*ky);
-#   Gf_yy = conf .* ((1-s).*k.^2+s.*kx.^2);
+    conf = 2*(1+s)/(E*k**3)
+    gf_xx = conf * ((1-s)*k**2+s*ky**2)
+    gf_xy = conf * (-s*kx*ky)
+    gf_yy = conf * ((1-s)*k**2+s*kx**2)
 
 #   %set DC component to one
-#   Gf_xx(1,1) = 0;
-#   Gf_yy(1,1) = 0;
-#   Gf_xy(1,1) = 0;
-  
+    gf_xx[0,0] = 0
+    gf_xy[0,0] = 0
+    gf_yy[0,0] = 0
+
 #   %FT of the real matrix is symmetric
+    gf_xy = 
+    gf_xy = 
+
 #   Gf_xy(i_max/2+1,:) = 0;
 #   Gf_xy(:,j_max/2+1) = 0;
   
