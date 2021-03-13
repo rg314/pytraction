@@ -44,6 +44,17 @@ Install autoballs in editable mode
 pip install -e .
 ```
 
+
+### Contributing
+Contributing: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
+
+For commiting big code blocks please relate them to issues and create a new branch. The branch name as the abbriviated issue (issue8 = iss8). 
+
+```git checkout -b iss8```
+
+Commit to current branch and assign a reviewer when merging pull request into main branch from the webapp.
+
+
 ## Amazing references
 Here is a list of common resources that have been used
 
