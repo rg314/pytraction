@@ -44,6 +44,12 @@ Install autoballs in editable mode
 pip install -e .
 ```
 
+To get example data run
+
+```
+source scripts/get_example_data.sh
+```
+
 ### Contributing
 Contributing: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
 
