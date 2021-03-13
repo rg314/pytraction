@@ -3,6 +3,7 @@ building/*
 data/*
 .vscode/*
 data2/*
+*.tif
 
 
 

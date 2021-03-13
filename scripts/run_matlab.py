@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-
+import os 
 from skimage import io
 
 from pytraction.utils import allign_slice
@@ -28,7 +28,7 @@ pix_durch_mu = 1.3
 E = 10000 # Young's modulus in Pa
 s = 0.3 # Poisson's ratio
 
-df = pd.read_csv('data\matlab_data.csv')
+df = pd.read_csv(f'data{os.sep}matlab_data.csv')
 
 un, vn, x, y, u, v = df.T.values
 

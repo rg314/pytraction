@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 
 from skimage import io
+import os 
 
 from pytraction.utils import allign_slice
 from pytraction.piv import PIV
@@ -29,11 +30,11 @@ E = 100 # Young's modulus in Pa
 s = 0.3 # Poisson's ratio
 
 
-df = pd.read_csv('data\PIV_test.txt', delimiter=' ', header=None)
+df = pd.read_csv(f'data{os.sep}PIV_test.txt', delimiter=' ', header=None)
 df = df.iloc[:,:-1]
 
 df.columns = ['x', 'y', 'ux1', 'uy1', 'mag1', 'ang1', 'p1', 'ux2', 'uy2', 'mag2', 'ang2', 'p2', 'ux0', 'uy0', 'mag0', 'flag']
-x, y, u, v = df[['x', 'y', 'ux1', 'uy1']].T.values
+x, y, u, v = df[['x', 'y', 'ux0', 'uy0']].T.values
 
 rgcopy = [x, y, u, v]
 
