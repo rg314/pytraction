@@ -19,9 +19,9 @@ Bayesian Traction Force Microscopy
 
 :heavy_check_mark: Finish writing bayesian TFM functions [from matlab implementation](https://github.com/CellMicroMechanics/Easy-to-use_TFM_package)
 
-:clock9:  train vanilla efficentnet CNN to get cell outline
+:clock9: implement NMT for filtering U, V vectors
 
-- [ ] implement NMT for filtering U, V vectors
+- [ ] train vanilla efficentnet CNN to get cell outline
 
 - [ ] end-to-end testing
 
