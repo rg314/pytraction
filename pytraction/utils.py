@@ -1,3 +1,8 @@
+import sys
+
+from scipy.sparse import linalg as splinalg
+import scipy.sparse as sparse
+
 import cv2
 import numpy as np
 
@@ -24,3 +29,13 @@ def allign_slice(img, ref):
     rows,cols = img.shape
     M = np.float32([[1,0,dx],[0,1,dy]])
     return cv2.warpAffine(img,M,(cols,rows))
+
+
+
+def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive-definite.
+    
+    n = A.shape[0]
+    LU = splinalg.splu(A,diag_pivot_thresh=0) # sparse LU decomposition
+    
+    return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5) )
+    

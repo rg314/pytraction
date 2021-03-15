@@ -1,56 +1,12 @@
-# % Copyright (C) 2010 - 2019, Sabass Lab
-# %
-# % This program is free software: you can redistribute it and/or modify it 
-# % under the terms of the GNU General Public License as published by the Free
-# % Software Foundation, either version 3 of the License, or (at your option) 
-# % any later version. This program is distributed in the hope that it will be 
-# % useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
-# % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
-# % Public License for more details. You should have received a copy of the 
-# % GNU General Public License along with this program.
-# % If not, see <http://www.gnu.org/licenses/>.
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# %DESCRIPTION
-# %Function for calculating regularization parameter using Bayesian method
-
-# %------------------
-# %FUNCTION ARGUMENTS 
-# %beta: 1/variance of noise 
-# %fuu: displacement vector in Fourior space
-# %Ftux: x component of displacement matrix in Fourior space
-# %Ftuy: y component of displacement matrix in Fourior space
-# %E: Young's modulus
-# %s: Poisson's ratio
-# %cluster_size: grid spacing in pixels
-# %grid_mat: regular grid with size i_max*j_max 
-# %u: displacement vectors on grid
-# %i_max, j_max: sizes of grid
-# %X: matrix between displacement and force in Fourior space
-# %sequence: set to 1 if only maximum evidence parameter should be returned
-# %------------------
-
-# %------------------
-# %FUNCTION OUTPUTS
-# %lambda_2: optimal regularization parameter
-# %evidencep: matrix for regularization parameter and its value of
-# %          logevidence around the optimal regularization parameter 
-# %evidence_one: value of logevidence at the optimal regularization parameter
-# %------------------
-
-
-# function [lambda_2 evidencep evidence_one]  = optimal_lambda(beta,fuu,Ftux,Ftuy,E,s,cluster_size,i_max, j_max,X,sequence)
-
 import numpy as np 
 from functools import partial
 
 from scipy.sparse import spdiags, csr_matrix
-from scipy.linalg import cholesky
-# from scikits.sparse.cholmod import cholesky
 import scipy.optimize as optimize
+
 import time 
 
+from pytraction.utils import sparse_cholesky
 from pytraction.reg_fourier import reg_fourier_tfm
 
 def minus_logevidence(alpha, beta, C_a, BX_a, X, fuu, constant, Ftux,Ftuy,E,s,cluster_size,i_max, j_max):
@@ -64,7 +20,8 @@ def minus_logevidence(alpha, beta, C_a, BX_a, X, fuu, constant, Ftux,Ftuy,E,s,cl
     f = np.expand_dims(f, axis=1)
 
     A = alpha*csr_matrix(C_a) + BX_a
-    L = cholesky(csr_matrix(A).toarray())
+    
+    L = sparse_cholesky(csr_matrix(A)).toarray()
     logdetA = 2*np.sum(np.log(np.diag(L)))
 
     Xf_u = X*f-fuu

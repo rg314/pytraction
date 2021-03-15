@@ -69,7 +69,7 @@ f_n_m = E*f_n_m
 #display a heatmap of the spatial traction distribution
 # fnorm = np.sqrt(f_n_m[:,:,1]**2 + f_n_m[:,:,0]**2)**0.5
 
-print(L)
+print('the parameter was', L)
 
 img = traction_magnitude.reshape(i_max, j_max).T
 

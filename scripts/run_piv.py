@@ -30,8 +30,8 @@ E = 10000 # Young's modulus in Pa
 s = 0.3 # Poisson's ratio
 
 
-df = pd.read_csv(f'data\PositionNTC310kPa19\PIV19.txt', delimiter=' ', header=None)
-outline = pd.read_csv(f'data\Position12\Outline12.csv')
+df = pd.read_csv(f'data/PositionNTC310kPa19/PIV19.txt', delimiter=' ', header=None)
+outline = pd.read_csv(f'data/Position12/Outline12.csv')
 df = df.iloc[:,:-1]
 
 
@@ -55,9 +55,9 @@ noise_vec = np.array([un.flatten(), vn.flatten()])
 
 fig, ax = plt.subplots(1,2)
 
-ax[0].quiver(x,y,u,v)
-ax[1].quiver(xn,yn,un,vn)
-plt.show()
+# ax[0].quiver(x,y,u,v)
+# ax[1].quiver(xn,yn,un,vn)
+# plt.show()
 
 
 varnoise = np.var(noise_vec)
