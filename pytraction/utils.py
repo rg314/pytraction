@@ -15,7 +15,7 @@ def allign_slice(img, ref):
     :return: Aligned image
     """
     # amount to reduce template
-    depth = 20
+    depth = int(min(img.shape)*0.1)
 
     # calculate matchTemplate using ccorr_normed method
     tm_ccorr_normed = cv2.matchTemplate(img,ref[depth:-depth, depth:-depth],cv2.TM_CCORR_NORMED)
@@ -31,11 +31,13 @@ def allign_slice(img, ref):
     return cv2.warpAffine(img,M,(cols,rows))
 
 
-
 def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive-definite.
-    
     n = A.shape[0]
     LU = splinalg.splu(A,diag_pivot_thresh=0) # sparse LU decomposition
     
     return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5) )
-    
+
+
+def normalize(x):
+    x = (x - np.min(x)) / (np.max(x) - np.min(x))
+    return np.array(x*255, dtype='uint8')

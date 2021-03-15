@@ -9,7 +9,7 @@ from shapely import geometry
 
 
 from pytraction.piv import PIV
-from pytraction.utils import allign_slice
+from pytraction.utils import normalize
 from pytraction.traction_force import PyTraction
 from read_roi import read_roi_file
 
@@ -60,8 +60,8 @@ for img_stack_name in images:
 
     for frame in range(nframes):
         # load plane
-        ref = np.array(ref1[channel,:,:], dtype='uint8')
-        img = np.array(img1[frame, channel, :, :], dtype='uint8')
+        ref = normalize(np.array(ref1[channel,:,:]))
+        img = normalize(np.array(img1[frame, channel, :, :]))
 
         # if there's a ROI file provided cut the cell out and pad with 0.2x cell max len and crop input images 
         if roi: 
@@ -108,8 +108,12 @@ for img_stack_name in images:
 
 
         # do piv
-        piv_obj = PIV(window_size=32, search_area_size=32, overlap=16)
-        x, y, u, v, stack = piv_obj.iterative_piv(img, ref)
+        piv_obj = PIV(window_size=64)
+        tmp = f'{save_path}/corr_{frame}.tif'
+        x, y, u, v, stack = piv_obj.iterative_piv(img, ref, tmp)
+
+    
+        
 
         
         if not TFM:

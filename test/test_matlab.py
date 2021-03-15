@@ -1,14 +1,7 @@
-import glob
 import os
-import cv2
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import sys
-import os 
-from skimage import io
 
-from pytraction.utils import allign_slice
 from pytraction.traction_force import PyTraction
 
 

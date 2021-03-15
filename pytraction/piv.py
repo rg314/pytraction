@@ -1,6 +1,7 @@
 import openpiv
 import numpy as np
 import cv2
+from skimage import io
 
 from pytraction.utils import allign_slice
 from openpiv import tools, pyprocess, validation, filters, scaling, windef, widim
@@ -66,8 +67,13 @@ class PIV(object):
         settings.correlation_method='linear'    
         return settings
     
-    def iterative_piv(self, img, ref):
+    def iterative_piv(self, img, ref, tmp):
         img = allign_slice(img, ref)
+        stack = np.stack([img, ref])
+
+        io.imsave(tmp,stack)
+
+
         x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
                                     img.astype(np.int32), 
                                     np.ones_like(ref).astype(np.int32), 
@@ -81,5 +87,8 @@ class PIV(object):
                                     tolerance=1.5, 
                                     nb_iter_max=1, 
                                     sig2noise_method='peak2peak')
-        return x,y,u,v, (img, ref)
+        
+
+
+        return x,y,u,v, stack
 
