@@ -1,7 +1,8 @@
 import openpiv
 import numpy as np
 import cv2
-from openpiv import tools, pyprocess, validation, filters, scaling 
+from openpiv import tools, pyprocess, validation, filters, scaling, windef
+
 
 
 class PIV(object):
@@ -34,9 +35,10 @@ class PIV(object):
                                         search_area_size=self.search_area_size, 
                                         overlap=self.overlap)
 
-        u, v, mask = validation.sig2noise_val( u, v, 
-                                            sig2noise, 
-                                            threshold = np.percentile(sig2noise,5))
+        u, v, mask = validation.typical_validation( u, v, 
+                                            sig2noise,
+                                            settings) 
+                                            #threshold = np.percentile(sig2noise,5))
 
         # removing and filling in the outlier vectors
         u, v = filters.replace_outliers(u, v, method='localmean', 
