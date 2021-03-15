@@ -15,8 +15,8 @@ CLASSIFIERS = [
 REQUIREMENTS = []
 
 
-SETUP_REQUIRES = ('') #('pytest-cov', 'pytest-runner','pytest', 'codecov')
-TESTS_REQUIRES = ('') #('pytest-cov','codecov')
+SETUP_REQUIRES = ('pytest-cov', 'pytest-runner','pytest', 'codecov')
+TESTS_REQUIRES = ('pytest-cov','codecov')
 
 
 PACKAGES = [
