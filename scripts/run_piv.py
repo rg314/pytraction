@@ -26,12 +26,14 @@ channel = 0
 meshsize = 10 # grid spacing in pix
 pix_durch_mu = 1.3
 
-E = 100 # Young's modulus in Pa
+E = 10000 # Young's modulus in Pa
 s = 0.3 # Poisson's ratio
 
 
-df = pd.read_csv(f'data{os.sep}PIV_test.txt', delimiter=' ', header=None)
+df = pd.read_csv(f'data\PositionNTC310kPa19\PIV19.txt', delimiter=' ', header=None)
+outline = pd.read_csv(f'data\Position12\Outline12.csv')
 df = df.iloc[:,:-1]
+
 
 df.columns = ['x', 'y', 'ux1', 'uy1', 'mag1', 'ang1', 'p1', 'ux2', 'uy2', 'mag2', 'ang2', 'p2', 'ux0', 'uy0', 'mag0', 'flag']
 x, y, u, v = df[['x', 'y', 'ux0', 'uy0']].T.values
@@ -39,16 +41,23 @@ x, y, u, v = df[['x', 'y', 'ux0', 'uy0']].T.values
 rgcopy = [x, y, u, v]
 
 
+xoutline, youtline = outline.T.values
 
-noise = 20
+xoutline = [float(x)/0.36 for x in xoutline]
+youtline = [float(x)/0.36 for x in youtline]
+
+
+
+
+noise = 30
 xn, yn, un, vn = x[:noise],y[:noise],u[:noise],v[:noise]
 noise_vec = np.array([un.flatten(), vn.flatten()])
 
-# fig, ax = plt.subplots(1,2)
+fig, ax = plt.subplots(1,2)
 
-# ax[0].quiver(x,y,u,v)
-# ax[1].quiver(xn,yn,un,vn)
-# plt.show()
+ax[0].quiver(x,y,u,v)
+ax[1].quiver(xn,yn,un,vn)
+plt.show()
 
 
 varnoise = np.var(noise_vec)
