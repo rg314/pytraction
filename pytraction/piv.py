@@ -1,18 +1,23 @@
 import openpiv
 import numpy as np
 import cv2
-from openpiv import tools, pyprocess, validation, filters, scaling, windef
+
+from pytraction.utils import allign_slice
+from openpiv import tools, pyprocess, validation, filters, scaling, windef, widim
 
 
 
 class PIV(object):
 
-    def __init__(self, window_size=64, search_area_size=64, overlap=32, dt=1, scaling_factor = None):
+    def __init__(self, window_size=32, search_area_size=32, overlap=16, dt=1, scaling_factor = None, settings=None):
         self.scaling_factor = scaling_factor
         self.window_size = window_size
         self.search_area_size = search_area_size
         self.overlap = overlap
         self.dt = dt
+
+        if not settings:
+            self._get_default_settings()
 
     def base_piv(self, img, ref, sig2noise_method='peak2peak'):
         """
@@ -55,14 +60,26 @@ class PIV(object):
 
         return x, y, u, v
 
+    @staticmethod
+    def _get_default_settings():
+        settings = windef.Settings()
+        settings.correlation_method='linear'    
+        return settings
+    
+    def iterative_piv(self, img, ref):
+        img = allign_slice(img, ref)
+        x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
+                                    img.astype(np.int32), 
+                                    np.ones_like(ref).astype(np.int32), 
+                                    min_window_size=self.window_size, 
+                                    overlap_ratio=0.5, 
+                                    coarse_factor=0, 
+                                    dt=self.dt, 
+                                    validation_method='mean_velocity', 
+                                    trust_1st_iter=0, 
+                                    validation_iter=3, 
+                                    tolerance=1.5, 
+                                    nb_iter_max=1, 
+                                    sig2noise_method='peak2peak')
+        return x,y,u,v, (img, ref)
 
-
-
-    # for x in [256, 128, 64, 32, 16]:
-    #     x, y, u, v = base_piv(frame_a, frame_b, window_size=x, search_area_size=x, overlap=x//2)
-    #     m = np.sqrt(u**2 + v**2).flatten()
-    #     fig, ax = plt.subplots(1,2)
-    #     ax[0].hist(m)
-    #     ax[1].imshow(frame_a, cmap='gray')
-    #     ax[1].quiver(x,y, u,v)
-    #     plt.show()
