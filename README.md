@@ -22,10 +22,13 @@ Bayesian Traction Force Microscopy
 
 :heavy_check_mark: implement NMT for filtering U, V vectors
 
-:clock9: train vanilla efficentnet CNN to get cell outline
+:heavy_check_mark: train vanilla efficentnet CNN to get cell outline
 
-:clock9: end-to-end testing
+:heavy_check_mark: end-to-end testing
 
+:clock9: create a list of common bugs and raise sort errors out
+
+:clock9: refactor code and slim down into general use API
 
 ## Installation
 I've not yet included the reqs so this will be broken and you'll need to install a few libs manually for now
