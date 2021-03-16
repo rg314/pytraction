@@ -1,6 +1,10 @@
 [![Build Status](https://travis-ci.com/rg314/pytraction.svg?token=BCkcrsWckKEnE7AqL2uD&branch=main)](https://travis-ci.com/rg314/pytraction)
 [![codecov](https://codecov.io/gh/rg314/pytraction/branch/main/graph/badge.svg?token=5HLPLUWIXN)](https://codecov.io/gh/rg314/pytraction)
 
+
+![image](https://drive.google.com/uc?export=view&id=1TG-_TGr27_W_rScw3IQgroe8SP0Wqdts)
+
+
 # pytraction
 Bayesian Traction Force Microscopy
 
@@ -9,7 +13,6 @@ Bayesian Traction Force Microscopy
 **PyTraction**: Modern software and easy to use end-to-end
 
 **Contributing**: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
-
 
 
 #### TO-DO
