@@ -1,5 +1,3 @@
-from pytraction.net.utlis import get_img_from_seg
-
 import cv2
 from PIL import Image
 import numpy as np
@@ -23,18 +21,25 @@ class Dataset(BaseDataset):
     
     """
     
-    CLASSES = ['cell', 'background']
+    CLASSES = ['background', 'cell', 'balls']
     
     def __init__(
             self, 
+            image_dir,
             masks_dir, 
             classes=None, 
             augmentation=None, 
             preprocessing=None,
+            in_channels=3,
+            size=256,
+            test=False
     ):
         self.ids = len(masks_dir)
         self.masks_fps = masks_dir
-        self.images_fps = list(map(get_img_from_seg, self.masks_fps))
+        self.images_fps = image_dir
+        self.in_channels = in_channels
+        self.test = test
+        self.size = size
         
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
@@ -43,17 +48,30 @@ class Dataset(BaseDataset):
         self.preprocessing = preprocessing
     
     def __getitem__(self, i):
-        
-        # read data
         image = Image.open(self.images_fps[i])
         mask = Image.open(self.masks_fps[i])
 
-        image = np.asarray(image)
-        # image = image.reshape(image.shape[0], image.shape[0],1)
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        mask = np.asarray(mask)
-        mask = 1.0 * (mask > 0)
-        mask = mask.reshape(mask.shape[0], mask.shape[0],1)
+
+        # read data
+        image = cv2.cvtColor(np.array(image), cv2.COLOR_GRAY2RGB)
+        image = np.asarray(image)[:,:,:3]
+
+        if not self.test:
+            mask = np.asarray(mask)
+            mask = 1.0 * (mask > 0)
+            mask = mask.reshape(mask.shape[0], mask.shape[1],1 )
+        
+        else:
+            mask = np.zeros((self.size, self.size, 1))
+
+        # cv2.imwrite('test.png', mask)
+        # image = image.reshape(image.shape + (1,))
+        
+
+        # extract certain classes from mask (e.g. cars)
+        # masks = [(mask == v) for v in self.class_values]
+        # mask = np.stack(masks, axis=-1).astype('float')
+
 
         # apply augmentations
         if self.augmentation:
@@ -62,8 +80,11 @@ class Dataset(BaseDataset):
         
         # apply preprocessing
         if self.preprocessing:
-            sample = self.preprocessing(image=image, mask=mask)
+            sample = self.preprocessing(image=image, mask=mask) 
             image, mask = sample['image'], sample['mask']
+
+        if self.in_channels != 3:
+            image = image[:1,:,:]
             
         return image, mask
         
@@ -71,29 +92,42 @@ class Dataset(BaseDataset):
         return self.ids
 
 
-def get_training_augmentation():
+def get_training_augmentation(size):
+    SIZE = size
     train_transform = [
-        albu.Resize(256,256),
+        albu.Resize(SIZE,SIZE),
 
         albu.HorizontalFlip(p=0.5),
+        albu.RandomRotate90(p=0.5),
+        albu.Rotate(p=0.5),
 
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
+        albu.IAAPerspective(p=0.5),
 
-        albu.PadIfNeeded(min_height=320, min_width=320, always_apply=True, border_mode=0),
-        # albu.RandomCrop(height=212, width=212, always_apply=True),
+
+
+        # albu.PadIfNeeded(min_height=SIZE, min_width=SIZE, always_apply=True, border_mode=0),
 
         # albu.IAAAdditiveGaussianNoise(p=0.2),
-        # albu.IAAPerspective(p=0.5),
+
 
     ]
     return albu.Compose(train_transform)
 
 
-def get_validation_augmentation():
+def get_validation_augmentation(size):
     """Add paddings to make image shape divisible by 32"""
+    SIZE = size
     test_transform = [
-        albu.Resize(256,256),
-        albu.PadIfNeeded(384, 480)
+        albu.Resize(SIZE,SIZE),
+    ]
+    return albu.Compose(test_transform)
+
+def get_test_augmentation(size):
+    """Add paddings to make image shape divisible by 32"""
+    SIZE = size
+    test_transform = [
+        albu.Resize(SIZE,SIZE),
     ]
     return albu.Compose(test_transform)
 

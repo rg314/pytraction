@@ -4,6 +4,8 @@ data/*
 .vscode/*
 data2/*
 *.tif
+*.pth
+*.zip
 
 
 

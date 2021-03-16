@@ -67,12 +67,9 @@ class PIV(object):
         settings.correlation_method='linear'    
         return settings
     
-    def iterative_piv(self, img, ref, tmp):
+    def iterative_piv(self, img, ref):
         img = allign_slice(img, ref)
         stack = np.stack([img, ref])
-
-        io.imsave(tmp,stack)
-
 
         x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
                                     img.astype(np.int32), 

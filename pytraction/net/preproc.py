@@ -55,14 +55,6 @@ class CellTrackPreprocessor:
         # load in the dataset by default
         self._load_dataset()
 
-        # preprocess embeddings
-        self._load_embeddings_from_csv()
-
-        assert start_frame < len(self.imgs), f'Warning start frame greater than number of frames {len(self.imgs)}' 
-        if start_frame != 0:
-            self.imgs = self.imgs[self.start_frame:]
-            self.masks = self.masks[self.start_frame:]
-            self.embeddings = self.embeddings[self.start_frame:]
 
         # if shuffle then shuffle the file names
         if shuffle:
