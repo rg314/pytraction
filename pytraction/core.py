@@ -37,10 +37,8 @@ class TractionForce(object):
     def get_model(self):
         # currently using model from 20210316
         best_model = torch.hub.load_state_dict_from_url(
-            'https://docs.google.com/uc?export=download&id=1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n')
-        if self.device == 'cpu':
-            best_model = best_model.to('cpu')
-        else:
+            'https://docs.google.com/uc?export=download&id=1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n', map_location='cpu')
+        if self.device == 'cuda' and torch.cuda.is_available():
             best_model = best_model.to('cuda')
         preproc_fn = smp.encoders.get_preprocessing_fn('efficientnet-b1', 'imagenet')
         preprocessing_fn = get_preprocessing(preproc_fn)
