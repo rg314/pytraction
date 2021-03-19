@@ -110,7 +110,7 @@ for img_stack_name in images:
         # do piv
         piv_obj = PIV(window_size=64)
         tmp = f'{save_path}/corr_{frame}.tif'
-        x, y, u, v, stack = piv_obj.iterative_piv(img, ref, tmp)
+        x, y, u, v, stack = piv_obj.iterative_piv(img, ref)
 
     
         
