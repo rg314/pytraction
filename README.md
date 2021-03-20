@@ -52,7 +52,7 @@ conda create -n pytraction python=3.8
 Install pytraction (for dev install in editable mode `- e .`)
 
 ```
-pip install pytraction
+pip install pytraction/
 ```
 
 To get example data run
