@@ -80,8 +80,6 @@ Commit to current branch and assign a reviewer when merging pull request into ma
 ## Example
 From inital testing it is possible to pass input x,y,u,v into the function and the matlab implementation can be reproduced
 
-```python run_matlab.py```
-
 Output:
 
 ![image](https://user-images.githubusercontent.com/35999546/111041793-ee3a6380-8431-11eb-906f-6698aaa6ba03.png)
