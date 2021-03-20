@@ -118,8 +118,8 @@ def reg_fourier_tfm(Ftux,Ftuy,L,E,s,cluster_size,i_max, j_max, grid_mat=None, pi
         Ftfy = Ginv_xy*Ftux + Ginv_yy*Ftuy
 
         f_n_m = np.zeros(Ftfx.shape+(2,))
-        f_n_m[:,:,0] =  np.fft.ifft2(Ftfx)
-        f_n_m[:,:,1] =  np.fft.ifft2(Ftfy)
+        f_n_m[:,:,0] =  np.real(np.fft.ifft2(Ftfx))
+        f_n_m[:,:,1] =  np.real(np.fft.ifft2(Ftfy))
 
         f_nm_2 = np.zeros((i_max*j_max,2,1))
         f_nm_2[:,0] = f_n_m[:,:,0].reshape(i_max*j_max,1)

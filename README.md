@@ -35,7 +35,10 @@ Bayesian Traction Force Microscopy
 :clock9: refactor code and slim down into general use API
 
 ## Installation
-I've not yet included the reqs so this will be broken and you'll need to install a few libs manually for now
+For HTTPS
+```git clone https://github.com/rg314/pytraction.git```
+
+For SSH 
 
 ```git clone git@github.com:rg314/pytraction.git```
 
@@ -46,10 +49,10 @@ Create conda env
 conda create -n pytraction python=3.8
 ```
 
-Install autoballs in editable mode
+Install pytraction (for dev install in editable mode `- e .`)
 
 ```
-pip install -e .
+pip install pytraction
 ```
 
 To get example data run
@@ -57,6 +60,13 @@ To get example data run
 ```
 source scripts/get_example_data.sh
 ```
+
+For basic usage run
+
+```
+python scripts/usage.py
+```
+
 
 ### Contributing
 Contributing: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)

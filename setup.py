@@ -50,7 +50,9 @@ REQUIREMENTS = [
     'tqdm==4.59.0',
     'torch==1.8.0',
     'albumentations==0.5.2',
-    'segmentation_models_pytorch==0.1.3'
+    'segmentation_models_pytorch==0.1.3',
+    'shapely==1.7.1',
+
 ]
 
 
