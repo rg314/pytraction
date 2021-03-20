@@ -38,8 +38,7 @@ Bayesian Traction Force Microscopy
 For HTTPS
 ```git clone https://github.com/rg314/pytraction.git```
 
-For SSH 
-
+For SSH
 ```git clone git@github.com:rg314/pytraction.git```
 
 
@@ -52,7 +51,7 @@ conda create -n pytraction python=3.8
 Install pytraction (for dev install in editable mode `- e .`)
 
 ```
-pip install pytraction
+pip install pytraction/
 ```
 
 To get example data run
