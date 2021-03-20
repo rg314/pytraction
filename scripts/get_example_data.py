@@ -1,7 +1,6 @@
 
 import os
 from google_drive_downloader import GoogleDriveDownloader as gdd
-import google_drive_downloader
 
 # data_20210320.zip
 file_id = '1DsPuqAzI7CEH-0QN-DWHdnF6-to5HdFe'
