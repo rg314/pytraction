@@ -10,7 +10,7 @@ from shapely import geometry
 
 from pytraction.piv import PIV
 import pytraction.net.segment as pynet 
-from pytraction.utils import normalize
+from pytraction.utils import normalize, allign_slice
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
 
@@ -181,7 +181,7 @@ class TractionForce(object):
         return img, ref, roi
 
 
-    def process_stack(self, img_stack, ref_stack, bead_channel=1, roi=False, frame=[]):
+    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[]):
         nframes = img_stack.shape[0]
 
         log = defaultdict(list)

@@ -5,6 +5,9 @@ import scipy.sparse as sparse
 
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 def allign_slice(img, ref):
@@ -41,3 +44,28 @@ def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive
 def normalize(x):
     x = (x - np.min(x)) / (np.max(x) - np.min(x))
     return np.array(x*255, dtype='uint8')
+
+
+
+def plot(log, frame=0, fmax_plot=None):
+    traction_map = log['traction_map'][frame]
+    cell_roi = log['cell_roi'][frame]
+    x, y = log['pos'][frame]
+    u, v = log['vec'][frame]
+    L = log['L'][frame]
+    fmax_plot = np.max(traction_map) if not fmax_plot else fmax_plot
+ 
+    
+    fig, ax = plt.subplots(1,2)
+    im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=fmax_plot)
+    ax[0].quiver(x, y, u, v)
+    divider1 = make_axes_locatable(ax[0])
+    cax1 = divider1.append_axes("right", size="5%", pad=0.05)
+
+    im2 = ax[1].imshow(cell_roi, cmap='gray',vmax=np.max(cell_roi))
+
+    fig.colorbar(im1, cax=cax1)
+
+    ax[0].set_axis_off()
+    ax[1].set_axis_off()
+    plt.tight_layout()

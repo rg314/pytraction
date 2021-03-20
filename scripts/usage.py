@@ -23,9 +23,9 @@ print(log)
 pix_per_mu = 9.8138
 E = 1000 # Young's modulus in Pa
 
-img_path = 'data/example2/1kPa-2-Position007.tif'
-ref_path = 'data/example2/1kPa-2-Position007-ref.tif'
-roi_path = 'data/example2/1kPa-2-Position007.roi'
+img_path = 'data/example2/1kPa-2-Position006.tif'
+ref_path = 'data/example2/1kPa-2-Position006_ref.tif'
+roi_path = 'data/example2/1kPa-2-Position006.roi'
 
 traction_obj = TractionForce(pix_per_mu, E=E)
 
@@ -37,7 +37,7 @@ print(log)
 
 
 ########## Example 3
-pix_per_mu = 1
+ix_per_mu = 1
 E = 3000 # Young's modulus in Pa
 
 img_path_bead = 'data/example3/Beads3.tif'
@@ -56,12 +56,12 @@ ref = z_project(ref_path)
 img = np.stack([[bead, cell]])
 ref = np.stack([ref, ref])
 
-io.imsave('data/aki_example/tfm.tif', img)
-io.imsave('data/aki_example/tfm-ref.tif', ref)
+io.imsave('data/example3/tfm.tif', img)
+io.imsave('data/example3/tfm-ref.tif', ref)
 
 
-img_path = 'data/aki_example/tfm.tif'
-ref_path = 'data/aki_example/tfm-ref.tif'
+img_path = 'data/example3/tfm.tif'
+ref_path = 'data/example3/tfm-ref.tif'
 
 traction_obj = TractionForce(pix_per_mu, E=E, segment=True, window_size=16)
 
