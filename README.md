@@ -58,7 +58,7 @@ pip install pytraction
 To get example data run
 
 ```
-source scripts/get_example_data.sh
+python scripts/get_example_data.py
 ```
 
 For basic usage run

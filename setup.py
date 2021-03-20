@@ -52,6 +52,7 @@ REQUIREMENTS = [
     'albumentations==0.5.2',
     'segmentation_models_pytorch==0.1.3',
     'shapely==1.7.1',
+    'googledrivedownloader==0.4',
 
 ]
 
@@ -62,6 +63,7 @@ TESTS_REQUIRES = ('pytest-cov','codecov')
 
 PACKAGES = [
     'pytraction',
+    'pytraction.net',
 ]
 
 
