@@ -59,7 +59,7 @@ python scripts/usage.py
 
 ## Example
 
-The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/622a39ef09a9a99bd47682cc81f4c8ab5d9bbc36/scripts/usage.ipynb)
+The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/main/scripts/usage.ipynb)
 
 
 For basic usage:
