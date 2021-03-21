@@ -53,6 +53,7 @@ REQUIREMENTS = [
     'segmentation_models_pytorch==0.1.3',
     'shapely==1.7.1',
     'googledrivedownloader==0.4',
+    'requests==2.25.1',
 
 ]
 

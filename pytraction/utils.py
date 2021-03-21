@@ -1,3 +1,4 @@
+import os 
 import sys
 
 from scipy.sparse import linalg as splinalg
@@ -47,17 +48,17 @@ def normalize(x):
 
 
 
-def plot(log, frame=0, fmax_plot=None):
+def plot(log, frame=0, vmax=None):
     traction_map = log['traction_map'][frame]
     cell_roi = log['cell_roi'][frame]
     x, y = log['pos'][frame]
     u, v = log['vec'][frame]
     L = log['L'][frame]
-    fmax_plot = np.max(traction_map) if not fmax_plot else fmax_plot
+    vmax = np.max(traction_map) if not vmax else vmax
  
     
     fig, ax = plt.subplots(1,2)
-    im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=fmax_plot)
+    im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
     ax[0].quiver(x, y, u, v)
     divider1 = make_axes_locatable(ax[0])
     cax1 = divider1.append_axes("right", size="5%", pad=0.05)
@@ -69,3 +70,14 @@ def plot(log, frame=0, fmax_plot=None):
     ax[0].set_axis_off()
     ax[1].set_axis_off()
     plt.tight_layout()
+    
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+

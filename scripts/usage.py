@@ -3,7 +3,7 @@ from skimage import io
 import numpy as np
 import matplotlib.pyplot as plt
 
-######### Example 1
+# ######### Example 1
 pix_per_mu = 1.3
 E = 100 # Young's modulus in Pa
 
@@ -36,8 +36,8 @@ log = traction_obj.process_stack(img, ref, roi=roi)
 print(log)
 
 
-########## Example 3
-ix_per_mu = 1
+# ########## Example 3
+pix_per_mu = 1
 E = 3000 # Young's modulus in Pa
 
 img_path_bead = 'data/example3/Beads3.tif'

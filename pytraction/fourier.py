@@ -63,6 +63,9 @@ def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
     X = spdiags(data, (-1,0,1), len(X1), len(X1))
 
 
+    # remove any nan values in the displacement field #iss14
+    u = np.nan_to_num(u)
+
     # Fourier transform displacement field
     ftux = np.fft.fft2(u[:,:,0]).T
     ftuy = np.fft.fft2(u[:,:,1]).T

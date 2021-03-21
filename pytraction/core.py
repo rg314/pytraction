@@ -13,9 +13,11 @@ import pytraction.net.segment as pynet
 from pytraction.utils import normalize, allign_slice
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
+from pytraction.utils import HiddenPrints
 
 
-
+from google_drive_downloader import GoogleDriveDownloader as gdd
+import tempfile
 
 class TractionForce(object):
 
@@ -43,9 +45,22 @@ class TractionForce(object):
 
 
     def get_model(self):
+        # data_20210320.zip
+        file_id = '1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n'
+        tmpdir = tempfile.gettempdir()
+        destination = f'{tmpdir}/model.zip'
+
+
+        gdd.download_file_from_google_drive(file_id=file_id,
+                                        dest_path=destination,
+                                        unzip=True,
+                                        showsize=True,
+                                        overwrite=False)
+
+
+
         # currently using model from 20210316
-        best_model = torch.hub.load_state_dict_from_url(
-            'https://docs.google.com/uc?export=download&id=1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n', map_location='cpu')
+        best_model = torch.load(f'{tmpdir}/best_model_1.pth', map_location='cpu')
         if self.device == 'cuda' and torch.cuda.is_available():
             best_model = best_model.to('cuda')
         preproc_fn = smp.encoders.get_preprocessing_fn('efficientnet-b1', 'imagenet')
@@ -61,7 +76,7 @@ class TractionForce(object):
         if not roi and self.segment:
             mask = pynet.get_mask(cell_img, self.model, self.pre_fn, device=self.device)
 
-            mask = np.array(~mask.astype('bool'), dtype='uint8')
+            mask = np.array(mask.astype('bool'), dtype='uint8')
 
             contours, _ = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
             areas = [cv2.contourArea(c) for c in contours]
@@ -180,8 +195,16 @@ class TractionForce(object):
 
         return img, ref, roi
 
+    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], verbose=1):
+        if verbose == 1:
+            print('Processing stacks')
+            with HiddenPrints():
+                output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame)
+        else:
+            output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame)
+        return output
 
-    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[]):
+    def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[]):
         nframes = img_stack.shape[0]
 
         log = defaultdict(list)
