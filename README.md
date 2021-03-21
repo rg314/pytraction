@@ -9,7 +9,7 @@ Bayesian Traction Force Microscopy
   <img src="https://drive.google.com/uc?export=view&id=1TG-_TGr27_W_rScw3IQgroe8SP0Wqdts" alt="Example logo" width="800"/>
 </p>
 
-**Motivation**: TFM data is annoying, disperse tool set (all in matlab / java / javascript)
+**Motivation**: TFM data is annoying, disperse tool set (all in matlab / ImageJ / javascript)
 
 **PyTraction**: Modern software and easy to use end-to-end
 
@@ -18,21 +18,11 @@ Bayesian Traction Force Microscopy
 
 #### TO-DO
 
-:heavy_check_mark: Base PIV
+:clock9: automatic window size
 
-:heavy_check_mark: Allign stacks
+:clock9: docs
 
-:heavy_check_mark: Finish writing bayesian TFM functions [from matlab implementation](https://github.com/CellMicroMechanics/Easy-to-use_TFM_package)
-
-:heavy_check_mark: implement NMT for filtering U, V vectors
-
-:heavy_check_mark: train vanilla efficentnet CNN to get cell outline
-
-:heavy_check_mark: end-to-end testing
-
-:clock9: create a list of common bugs and raise sort errors out
-
-:clock9: refactor code and slim down into general use API
+:clock9: tests
 
 ## Installation
 For HTTPS
@@ -67,6 +57,30 @@ python scripts/usage.py
 ```
 
 
+## Example
+
+The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/622a39ef09a9a99bd47682cc81f4c8ab5d9bbc36/scripts/usage.ipynb)
+
+
+For basic usage:
+
+```
+from pytraction.core import TractionForce
+from pytraction.utils import plot
+
+pix_per_mu = 1.3 # The number of pixels per micron 
+E = 100 # Youngs modulus in Pa
+img_path = 'data/example1/e01_pos1_axon1.tif'
+ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
+
+traction_obj = TractionForce(pix_per_mu, E=E)
+img, ref, _ = traction_obj.load_data(img_path, ref_path)
+log = traction_obj.process_stack(img, ref)
+
+plot(log, frame=0)
+plt.show()
+```
+
 ### Contributing
 Contributing: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
 
@@ -76,15 +90,6 @@ For commiting big code blocks please relate them to issues and create a new bran
 
 Commit to current branch and assign a reviewer when merging pull request into main branch from the webapp.
 
-## Example
-From inital testing it is possible to pass input x,y,u,v into the function and the matlab implementation can be reproduced
-
-Output:
-
-![image](https://user-images.githubusercontent.com/35999546/111041793-ee3a6380-8431-11eb-906f-6698aaa6ba03.png)
-
-L = 141.3021 for matlab
-L = 138.9749 for python
 
 ## Amazing references
 Here is a list of common resources that have been used

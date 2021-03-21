@@ -83,11 +83,11 @@ class TractionForce(object):
             sorted_areas = np.sort(areas)
 
             #bounding box (red)
-            cnt=contours[areas.index(sorted_areas[-1])] #the biggest contour
+            pts=contours[areas.index(sorted_areas[-1])] #the biggest contour
 
-            cv2.drawContours(cell_img, [cnt], -1, (255), 1, cv2.LINE_AA)
+            cv2.drawContours(cell_img, [pts], -1, (255), 1, cv2.LINE_AA)
 
-            polyx, polyy = np.squeeze(cnt, axis=1).T
+            polyx, polyy = np.squeeze(pts, axis=1).T
             roi = True
         
         if roi: 
@@ -122,13 +122,18 @@ class TractionForce(object):
                 pts = np.array(list(zip(polyx, polyy)), np.int32)
                 pts = pts.reshape((-1,1,2))
                 cv2.polylines(cell_img,[pts],True,(255), thickness=3)
-            
+
+            mask = cv2.fillPoly(np.zeros(cell_img.shape), [pts], (255))
+            mask_crop = mask[y-pad:y+h+pad, x-pad:x+w+pad]
+            # cnts_crop, _ = cv2.findContours(mask_crop.astype('uint8'),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            # pts_crop = cnts_crop[0]
+
             cell_img_full = cell_img
             cell_img_crop = cell_img[y-pad:y+h+pad, x-pad:x+w+pad]
 
-            return img_crop, ref_crop, cell_img_crop
+            return img_crop, ref_crop, cell_img_crop, mask_crop
         else:
-            return img, ref, cell_img
+            return img, ref, cell_img, None
 
 
 
@@ -214,7 +219,7 @@ class TractionForce(object):
             ref = normalize(np.array(ref_stack[bead_channel,:,:]))
 
             
-            img_crop, ref_crop, cell_img_crop = self.get_roi(img, ref, frame, roi, img_stack)
+            img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi, img_stack)
 
             # do piv
             window_size = self.get_windows_size()
@@ -235,6 +240,7 @@ class TractionForce(object):
             log['force_field'].append(f_n_m)
             log['stack_bead_roi'].append(stack)
             log['cell_roi'].append(cell_img_crop)
+            log['mask_roi'].append(mask_crop)
             log['beta'].append(beta)
             log['L'].append(L_optimal)
             log['pos'].append(pos)

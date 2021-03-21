@@ -47,19 +47,23 @@ def normalize(x):
     return np.array(x*255, dtype='uint8')
 
 
-
-def plot(log, frame=0, vmax=None):
+def plot(log, frame=0, vmax=None, mask=True):
     traction_map = log['traction_map'][frame]
     cell_roi = log['cell_roi'][frame]
     x, y = log['pos'][frame]
     u, v = log['vec'][frame]
     L = log['L'][frame]
     vmax = np.max(traction_map) if not vmax else vmax
- 
-    
+
     fig, ax = plt.subplots(1,2)
     im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
     ax[0].quiver(x, y, u, v)
+
+    if mask and isinstance(log['mask_roi'][frame], np.ndarray):
+        mask = log['mask_roi'][frame] 
+        mask = np.ma.masked_where(mask == 255, mask)
+        ax[0].imshow(mask, cmap='jet', extent=[x.min(), x.max(), y.min(), y.max()])
+
     divider1 = make_axes_locatable(ax[0])
     cax1 = divider1.append_axes("right", size="5%", pad=0.05)
 
