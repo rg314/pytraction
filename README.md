@@ -59,7 +59,7 @@ python scripts/usage.py
 
 ## Example
 
-The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/622a39ef09a9a99bd47682cc81f4c8ab5d9bbc36/scripts/usage.ipynb)
+The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/main/scripts/usage.ipynb)
 
 
 For basic usage:
@@ -80,6 +80,9 @@ log = traction_obj.process_stack(img, ref)
 plot(log, frame=0)
 plt.show()
 ```
+
+![image](https://user-images.githubusercontent.com/35999546/111919773-962fdc80-8a83-11eb-9230-ec9e588a9b77.png)
+
 
 ### Contributing
 Contributing: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
