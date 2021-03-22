@@ -47,7 +47,7 @@ def normalize(x):
     return np.array(x*255, dtype='uint8')
 
 
-def plot(log, frame=0, vmax=None, mask=True):
+def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
     traction_map = log['traction_map'][frame]
     cell_roi = log['cell_roi'][frame]
     x, y = log['pos'][frame]
@@ -55,7 +55,7 @@ def plot(log, frame=0, vmax=None, mask=True):
     L = log['L'][frame]
     vmax = np.max(traction_map) if not vmax else vmax
 
-    fig, ax = plt.subplots(1,2)
+    fig, ax = plt.subplots(1,2, figsize=figsize)
     im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
     ax[0].quiver(x, y, u, v)
 
