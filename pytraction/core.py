@@ -27,6 +27,8 @@ class TractionForce(object):
         self.device = device
         self.segment = segment
         self.window_size = window_size
+        self.E = E
+        self.s = s
 
         self.TFM_obj = PyTraction(
             meshsize = meshsize, # grid spacing in pix
@@ -59,6 +61,8 @@ class TractionForce(object):
             window_size = knn.predict([[density]])
 
             window_size = int(window_size)
+
+            print(f'Automatically selected window size of {window_size}')
 
             return window_size
         else:
@@ -197,6 +201,10 @@ class TractionForce(object):
         img = io.imread(img_path)
         ref = io.imread(ref_path)
 
+        # messy fix to include file name in log file
+        self.ref_path = ref_path
+        self.img_path = img_path
+
         if '.csv' in roi_path:
             x, y = pd.read_csv(roi_path).T.values
             roi = (x,y)
@@ -267,6 +275,10 @@ class TractionForce(object):
             log['L'].append(L_optimal)
             log['pos'].append(pos)
             log['vec'].append(vec)
+            log['img_path'].append(self.img_path)
+            log['ref_path'].append(self.ref_path)
+            log['E'].append(self.E)
+            log['s'].append(self.s)
 
         return pd.DataFrame(log)
 
