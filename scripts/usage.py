@@ -22,7 +22,7 @@ plot(log, frame=0)
 plt.show()
 
 
-# # ########## Example 2
+# # # ########## Example 2
 pix_per_mu = 9.8138
 E = 1000 # Young's modulus in Pa
 
@@ -39,7 +39,7 @@ log = traction_obj.process_stack(img, ref, roi=roi)
 print(log)
 
 
-# ########## Example 3
+# # ########## Example 3
 pix_per_mu = 1
 E = 3000 # Young's modulus in Pa
 
@@ -66,7 +66,7 @@ io.imsave('data/example3/tfm-ref.tif', ref)
 img_path = 'data/example3/tfm.tif'
 ref_path = 'data/example3/tfm-ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E=E, segment=True, window_size=16)
+traction_obj = TractionForce(pix_per_mu, E=E, segment=True)
 
 img, ref, roi = traction_obj.load_data(img_path, ref_path)
 

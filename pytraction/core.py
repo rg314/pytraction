@@ -7,10 +7,11 @@ import segmentation_models_pytorch as smp
 from collections import defaultdict
 from read_roi import read_roi_file
 from shapely import geometry
+import pickle
 
 from pytraction.piv import PIV
 import pytraction.net.segment as pynet 
-from pytraction.utils import normalize, allign_slice
+from pytraction.utils import normalize, allign_slice, bead_density
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
 from pytraction.utils import HiddenPrints
@@ -37,9 +38,29 @@ class TractionForce(object):
         self.model, self.pre_fn = self.get_model()
 
 
-    def get_windows_size(self):
+    def get_window_size(self, img):
         if not self.window_size:
-            return 32
+            density = bead_density(img)
+
+            file_id = '1xQuGSUdW3nIO5lAm7DQb567sMEQgHmQD'
+            tmpdir = tempfile.gettempdir()
+            destination = f'{tmpdir}/knn.zip'
+
+
+            gdd.download_file_from_google_drive(file_id=file_id,
+                                            dest_path=destination,
+                                            unzip=True,
+                                            showsize=False,
+                                            overwrite=False)
+
+            with open(f'{tmpdir}/knn.pickle', 'rb') as f:
+                knn = pickle.load(f)
+            
+            window_size = knn.predict([[density]])
+
+            window_size = int(window_size)
+
+            return window_size
         else:
             return self.window_size
 
@@ -218,11 +239,12 @@ class TractionForce(object):
             img = normalize(np.array(img_stack[frame, bead_channel, :, :]))
             ref = normalize(np.array(ref_stack[bead_channel,:,:]))
 
+            window_size = self.get_window_size(img)
+
             
             img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi, img_stack)
 
             # do piv
-            window_size = self.get_windows_size()
             piv_obj = PIV(window_size=window_size)
             x, y, u, v, stack = piv_obj.iterative_piv(img_crop, ref_crop)
 
