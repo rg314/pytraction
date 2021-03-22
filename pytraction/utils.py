@@ -46,6 +46,27 @@ def normalize(x):
     x = (x - np.min(x)) / (np.max(x) - np.min(x))
     return np.array(x*255, dtype='uint8')
 
+def clahe(data):
+    img = cv2.cvtColor(data, cv2.COLOR_GRAY2BGR)
+    lab= cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+    cl = clahe.apply(l)
+    limg = cv2.merge((cl,a,b))
+    return cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)[:,:,0]
+
+
+def bead_density(img):
+    clahe_img = clahe(normalize(img))
+    norm = cv2.adaptiveThreshold(clahe_img,255,cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,5,2)/255
+    
+    ones = len(norm[norm == 1])
+    
+    area = img.shape[0]* img.shape[1]
+    area_beads = ones/area
+    
+    return area_beads
+
 
 def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
     traction_map = log['traction_map'][frame]
