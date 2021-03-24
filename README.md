@@ -5,10 +5,6 @@
 # pytraction
 Bayesian Traction Force Microscopy
 
-<p align="center">
-  <img src="https://drive.google.com/uc?export=view&id=1TG-_TGr27_W_rScw3IQgroe8SP0Wqdts" alt="Example logo" width="800"/>
-</p>
-
 **Motivation**: TFM data is annoying, disperse tool set (all in matlab / ImageJ / javascript)
 
 **PyTraction**: Modern software and easy to use end-to-end
