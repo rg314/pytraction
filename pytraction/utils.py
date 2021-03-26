@@ -90,11 +90,13 @@ def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
 
     im2 = ax[1].imshow(cell_roi, cmap='gray',vmax=np.max(cell_roi))
 
-    fig.colorbar(im1, cax=cax1)
+    cbar = fig.colorbar(im1, cax=cax1)
+    cbar.set_label('Traction stress [Pa]', rotation=270, labelpad=20)
 
     ax[0].set_axis_off()
     ax[1].set_axis_off()
     plt.tight_layout()
+    return fig, ax
     
 
 class HiddenPrints:

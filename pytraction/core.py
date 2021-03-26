@@ -8,6 +8,7 @@ from collections import defaultdict
 from read_roi import read_roi_file
 from shapely import geometry
 import pickle
+from scipy.spatial import distance
 
 from pytraction.piv import PIV
 import pytraction.net.segment as pynet 
@@ -53,7 +54,7 @@ class TractionForce(object):
                                             dest_path=destination,
                                             unzip=True,
                                             showsize=False,
-                                            overwrite=False)
+                                            overwrite=True)
 
             with open(f'{tmpdir}/knn.pickle', 'rb') as f:
                 knn = pickle.load(f)
@@ -104,11 +105,37 @@ class TractionForce(object):
             mask = np.array(mask.astype('bool'), dtype='uint8')
 
             contours, _ = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-            areas = [cv2.contourArea(c) for c in contours]
-            sorted_areas = np.sort(areas)
+            # areas = [cv2.contourArea(c) for c in contours]
+            # sorted_areas = np.sort(areas)
+
+            image_center = np.asarray(mask.shape) / 2
+            image_center = tuple(image_center.astype('int32'))
+
+            segmented = []
+            for contour in contours:
+                # find center of each contour
+                M = cv2.moments(contour)
+                center_X = int(M["m10"] / M["m00"])
+                center_Y = int(M["m01"] / M["m00"])
+                contour_center = (center_X, center_Y)
+            
+                # calculate distance to image_center
+                distances_to_center = (distance.euclidean(image_center, contour_center))
+            
+                # save to a list of dictionaries
+                segmented.append({
+                    'contour': contour, 
+                    'center': contour_center, 
+                    'distance_to_center': distances_to_center
+                    }
+                    )
+    
+    
+            sorted_cells = sorted(segmented, key=lambda i: i['distance_to_center'])
 
             #bounding box (red)
-            pts=contours[areas.index(sorted_areas[-1])] #the biggest contour
+            # pts=contours[areas.index(sorted_areas[-1])] #the biggest contour
+            pts=sorted_cells[0]['contour'] #the biggest contour
 
             cv2.drawContours(cell_img, [pts], -1, (255), 1, cv2.LINE_AA)
 
