@@ -2,7 +2,8 @@
 [![codecov](https://codecov.io/gh/rg314/pytraction/branch/main/graph/badge.svg?token=5HLPLUWIXN)](https://codecov.io/gh/rg314/pytraction)
 
 
-# pytraction
+![image](https://user-images.githubusercontent.com/35999546/112598957-2fa21a00-8e07-11eb-847c-37f311e4c919.png)
+
 Bayesian Traction Force Microscopy
 
 **Motivation**: TFM data is annoying, disperse tool set (all in matlab / ImageJ / javascript)
