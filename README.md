@@ -67,6 +67,7 @@ from pytraction.utils import plot
 
 pix_per_mu = 1.3 # The number of pixels per micron 
 E = 100 # Youngs modulus in Pa
+
 img_path = 'data/example1/e01_pos1_axon1.tif'
 ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
