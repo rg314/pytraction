@@ -10,16 +10,6 @@ Bayesian Traction Force Microscopy
 
 **PyTraction**: Modern software and easy to use end-to-end
 
-**Contributing**: Think of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation#:~:text=Big%20O%20notation%20is%20a,a%20particular%20value%20or%20infinity.) and [Occam's_razor](https://en.wikipedia.org/wiki/Occam%27s_razor)
-
-
-#### TO-DO
-
-:clock9: automatic window size
-
-:clock9: docs
-
-:clock9: tests
 
 ## Installation
 For HTTPS
