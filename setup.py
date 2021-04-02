@@ -54,7 +54,7 @@ REQUIREMENTS = [
     'shapely==1.7.1',
     'googledrivedownloader==0.4',
     'requests==2.25.1',
-
+    'scikit-learn==0.24.1'
 ]
 
 
