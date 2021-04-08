@@ -242,6 +242,8 @@ class TractionForce(object):
             y = self._recursive_lookup('y', d)
 
             roi = (x,y)
+        
+        elif isinstance(roi_path, tuple)
 
         else:
             roi = None
