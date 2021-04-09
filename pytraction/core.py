@@ -1,4 +1,5 @@
 import cv2 
+import os
 from skimage import io
 import pandas as pd
 import numpy as np
@@ -8,11 +9,12 @@ from collections import defaultdict
 from read_roi import read_roi_file
 from shapely import geometry
 import pickle
+import zipfile 
 from scipy.spatial import distance
 
 from pytraction.piv import PIV
 import pytraction.net.segment as pynet 
-from pytraction.utils import normalize, allign_slice, bead_density
+from pytraction.utils import normalize, allign_slice, bead_density, plot
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
 from pytraction.utils import HiddenPrints
@@ -95,7 +97,7 @@ class TractionForce(object):
         return best_model, preprocessing_fn
 
 
-    def get_roi(self, img, ref, frame, roi, img_stack):
+    def get_roi(self, img, ref, frame, roi, img_stack, crop):
         cell_img = np.array(img_stack[frame, 1, :, :])
         cell_img = normalize(cell_img)
 
@@ -167,21 +169,27 @@ class TractionForce(object):
             x,y,w,h = cv2.boundingRect(np.array(rescaled))
             pad = 50
 
-            img_crop = img[y-pad:y+h+pad, x-pad:x+w+pad]
-            ref_crop = ref[y-pad:y+h+pad, x-pad:x+w+pad]
 
             if not self.segment:
                 pts = np.array(list(zip(polyx, polyy)), np.int32)
                 pts = pts.reshape((-1,1,2))
                 cv2.polylines(cell_img,[pts],True,(255), thickness=3)
 
-            mask = cv2.fillPoly(np.zeros(cell_img.shape), [pts], (255))
-            mask_crop = mask[y-pad:y+h+pad, x-pad:x+w+pad]
-            # cnts_crop, _ = cv2.findContours(mask_crop.astype('uint8'),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-            # pts_crop = cnts_crop[0]
+            if crop:
+                img_crop = img[y-pad:y+h+pad, x-pad:x+w+pad]
+                ref_crop = ref[y-pad:y+h+pad, x-pad:x+w+pad]
 
-            cell_img_full = cell_img
-            cell_img_crop = cell_img[y-pad:y+h+pad, x-pad:x+w+pad]
+                mask = cv2.fillPoly(np.zeros(cell_img.shape), [pts], (255))
+                mask_crop = mask[y-pad:y+h+pad, x-pad:x+w+pad]
+
+                cell_img_full = cell_img
+                cell_img_crop = cell_img[y-pad:y+h+pad, x-pad:x+w+pad]
+
+            else:
+                img_crop = img
+                ref_crop = ref
+                mask_crop = cv2.fillPoly(np.zeros(cell_img.shape), [pts], (255))
+                cell_img_crop = cell_img
 
             return img_crop, ref_crop, cell_img_crop, mask_crop
         else:
@@ -243,6 +251,20 @@ class TractionForce(object):
 
             roi = (x,y)
 
+        elif '.zip' in roi_path:
+            rois = []
+            with zipfile.ZipFile(roi_path) as ziproi:
+                for file in ziproi.namelist():
+                    roi_path_file = ziproi.extract(file)
+                    d = read_roi_file(roi_path_file)
+                    x = self._recursive_lookup('x', d)
+                    y = self._recursive_lookup('y', d)
+                    rois.append((x,y))
+                    os.remove(roi_path_file)
+            
+            roi = rois
+
+
         else:
             roi = None
         
@@ -256,16 +278,16 @@ class TractionForce(object):
 
         return img, ref, roi
 
-    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], verbose=1):
+    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=1):
         if verbose == 1:
             print('Processing stacks')
             with HiddenPrints():
-                output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame)
+                output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
         else:
-            output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame)
+            output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
         return output
 
-    def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[]):
+    def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False):
         nframes = img_stack.shape[0]
 
         log = defaultdict(list)
@@ -276,8 +298,16 @@ class TractionForce(object):
 
             window_size = self.get_window_size(img)
 
+            if isinstance(roi, list):
+                assert len(roi) == nframes, f'Warning ROI list has len {len(roi)} which is not equal to \
+                                              the number of frames ({nframes}). This would suggest that you do not \
+                                              have the correct number of ROIs in the zip file.'
+                roi_i = roi[frame]
+            else:
+                roi_i = roi
+
             
-            img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi, img_stack)
+            img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi_i, img_stack, crop)
 
             # do piv
             piv_obj = PIV(window_size=window_size)
@@ -306,6 +336,7 @@ class TractionForce(object):
             log['ref_path'].append(self.ref_path)
             log['E'].append(self.E)
             log['s'].append(self.s)
+
 
         return pd.DataFrame(log)
 

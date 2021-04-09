@@ -61,6 +61,7 @@ REQUIREMENTS = [
 SETUP_REQUIRES = ('pytest-cov', 'pytest-runner','pytest', 'codecov')
 TESTS_REQUIRES = ('pytest-cov','codecov')
 
+ 
 
 PACKAGES = [
     'pytraction',
