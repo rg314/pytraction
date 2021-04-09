@@ -47,6 +47,21 @@ python scripts/usage.py
 ```
 
 
+### TLDR
+Navigate to folder where you want to install and ensure you have [miniconda](https://docs.conda.io/en/latest/miniconda.html) and [git]( https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed and run the following commands.
+
+```
+git clone https://github.com/rg314/pytraction.git
+conda create -n pytraction python=3.8
+pip install pytraction/
+cd pytraction
+python scripts/get_example_data.py
+pip install notebook
+python -m ipykernel install --user --name=pytraction
+jupyter notebook scripts/usage.ipynb
+```
+
+
 ## Example
 
 The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/main/scripts/usage.ipynb)
