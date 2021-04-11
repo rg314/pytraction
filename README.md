@@ -47,7 +47,7 @@ python scripts/usage.py
 ```
 
 
-### TLDR
+### TL;DR
 Navigate to folder where you want to install and ensure you have [miniconda](https://docs.conda.io/en/latest/miniconda.html) and [git]( https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed and run the following commands.
 
 ```
