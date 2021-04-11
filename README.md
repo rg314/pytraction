@@ -28,10 +28,22 @@ Create conda env
 conda create -n pytraction python=3.8
 ```
 
+Activate conda env
+
+```
+conda activate pytraction
+```
+
 Install pytraction (for dev install in editable mode `- e .`)
 
 ```
 pip install pytraction/
+```
+
+Change directory to repository
+
+```
+cd pytraction
 ```
 
 To get example data run
@@ -40,10 +52,22 @@ To get example data run
 python scripts/get_example_data.py
 ```
 
+Install jupyter notebook
+
+```
+pip install notebook
+```
+
+Install pytraction kernel to use with jupyter notebook
+
+```
+python -m ipykernel install --user --name=pytraction
+```
+
 For basic usage run
 
 ```
-python scripts/usage.py
+jupyter notebook scripts/usage.ipynb
 ```
 
 
@@ -53,6 +77,7 @@ Navigate to folder where you want to install and ensure you have [miniconda](htt
 ```
 git clone https://github.com/rg314/pytraction.git
 conda create -n pytraction python=3.8
+conda activate pytraction
 pip install pytraction/
 cd pytraction
 python scripts/get_example_data.py
