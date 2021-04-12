@@ -278,12 +278,12 @@ class TractionForce(object):
 
         return img, ref, roi
 
-    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=1):
-        if verbose == 1:
+    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=0):
+        if verbose == 0:
             print('Processing stacks')
             with HiddenPrints():
                 output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
-        else:
+        elif verbose == 1:
             output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
         return output
 
