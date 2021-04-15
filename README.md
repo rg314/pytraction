@@ -86,6 +86,11 @@ python -m ipykernel install --user --name=pytraction
 jupyter notebook scripts/usage.ipynb
 ```
 
+## Colab examples
+Please try running the following notebooks on google colab
+
+[Example 1: Basic usage with an image stack and reference image in the correct format](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example1.ipynb)
+
 
 ## Example
 

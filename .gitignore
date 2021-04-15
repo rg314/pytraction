@@ -6,7 +6,8 @@ data2/*
 *.tif
 *.pth
 *.zip
-
+examples/data/*
+examples/pytraction/*
 
 
 # Byte-compiled / optimized / DLL files
