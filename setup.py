@@ -80,6 +80,7 @@ options = {
     'setup_requires': SETUP_REQUIRES,
     'test_requires': TESTS_REQUIRES,
     'install_requires': REQUIREMENTS,
-    # 'package_data': DATA,
+    'entry_points': {
+            'console_scripts': ["pytraction_get_data=pytraction.get_example_data:main"]},
 }
 setup(**options)
