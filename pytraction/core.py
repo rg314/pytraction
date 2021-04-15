@@ -56,7 +56,7 @@ class TractionForce(object):
                                             dest_path=destination,
                                             unzip=True,
                                             showsize=False,
-                                            overwrite=True)
+                                            overwrite=False)
 
             with open(f'{tmpdir}/knn.pickle', 'rb') as f:
                 knn = pickle.load(f)
