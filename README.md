@@ -87,7 +87,7 @@ jupyter notebook scripts/usage.ipynb
 ```
 
 ## Colab examples
-Please try running the following notebooks on google colab
+Please try running the following notebooks on google colab. You will need to generate a [personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
 
 [Example 1: Basic usage with an image stack and reference image in the correct format](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example1.ipynb)
 
