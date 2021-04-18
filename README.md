@@ -15,6 +15,9 @@ Bayesian Traction Force Microscopy
 
 
 ## Installation
+
+*Note*: if running on Windows you may have problems with the shapely library and some ctypes extensions. Please install shapely via `conda install shapely`. 
+
 For HTTPS
 ```git clone https://github.com/rg314/pytraction.git```
 
