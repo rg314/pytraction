@@ -33,6 +33,7 @@ The draft manuscript has only been sent to a few authors to date. Authors are li
 -	Demonstrating usage of core python package compared to other analysis techniques.
 -	Demonstrating usage of core python package with computational techniques.
 -	Fixing major bugs in core python package.
+-	Contributed or provided experimental data for the manuscript.
 
 
 
