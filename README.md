@@ -26,7 +26,14 @@ Bayesian Traction Force Microscopy
 
 ## Draft manuscript
 
-*Create shared doc on MS 365
+Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
+
+The draft manuscript has only been sent to a few authors to date. Authors are listed alphabetically. Contributors will be invited to manuscript if a significant contribution is made which can consist of:
+-	Significantly contributing to design or code of the core python package.
+-	Demonstrating usage of core python package compared to other analysis techniques.
+-	Demonstrating usage of core python package with computational techniques.
+-	Fixing major bugs in core python package.
+
 
 
 ## Installation
