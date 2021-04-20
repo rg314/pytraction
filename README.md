@@ -35,6 +35,7 @@ The draft manuscript has only been sent to a few authors to date. Authors are li
 -	Fixing major bugs in core python package.
 -	Contributed or provided experimental data for the manuscript.
 
+If you believe that you have made a significant contribution (and have not been invited to the manuscript) or would like to make a significant contribution please [contact me](https://github.com/rg314).
 
 
 ## Installation
