@@ -22,6 +22,12 @@ Bayesian Traction Force Microscopy
 
 :clock9: Simple hdf5 usage
 
+:clock9: Write manuscript
+
+## Draft manuscript
+
+*Create shared doc on MS 365
+
 
 ## Installation
 
