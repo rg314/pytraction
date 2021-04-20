@@ -120,6 +120,8 @@ Please try running the following notebooks on google colab. You will need to gen
 
 [Example 2: Basic usage with an ROI](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example2.ipynb)
 
+[Example 3: Basic usage unexpected image formats](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example3.ipynb)
+
 ## Example
 
 The following code show an basic example. Please make sure you download example data by running the following script `python scripts/get_example_data.py`. You need to make sure that the `data` folder is in your working directory when you run the following code. For a more in-depth examples please see [scripts/usage.ipynb](https://github.com/rg314/pytraction/blob/main/scripts/usage.ipynb)
