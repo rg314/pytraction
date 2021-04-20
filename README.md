@@ -14,6 +14,15 @@ Bayesian Traction Force Microscopy
 **PyTraction**: Modern software and easy to use end-to-end
 
 
+## TO-DO
+
+:clock9: Tests for edge cases on input
+
+:clock9: Save to hdf5 rather than csv
+
+:clock9: Simple hdf5 usage
+
+
 ## Installation
 
 **Note**: if running on Windows you may have problems with the shapely library and some ctypes extensions. Please install shapely via `conda install shapely`. 
