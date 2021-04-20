@@ -26,7 +26,7 @@ Bayesian Traction Force Microscopy
 
 ## Draft manuscript
 
-Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
+Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC) or [OneDrive link to folder](https://universityofcambridgecloud-my.sharepoint.com/:f:/g/personal/rdg31_cam_ac_uk/EldvnfWg5k1NsGt5L7bthSYBFdrhbKrX1aaTAoxSKeag9g). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
 
 The draft manuscript has only been sent to a few authors to date. Authors are listed alphabetically. Contributors will be invited to manuscript if a significant contribution is made which can consist of:
 -	Significantly contributing to design or code of the core python package.
