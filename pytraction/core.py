@@ -236,6 +236,19 @@ class TractionForce(object):
         img = io.imread(img_path)
         ref = io.imread(ref_path)
 
+        if not isinstance(img,np.ndarray) or not isinstance(ref, np.ndarray):
+            msg = f'Image data not loaded for {img_path} or {ref_path}'
+            raise TypeError(msg)
+
+        if len(img.shape) != 4:
+            msg = f'Please ensure that the input image has shape (t,c,w,h) the current shape is {img.shape}'
+            raise RuntimeWarning(msg)
+        
+        if len(ref.shape) != 3:
+            msg = f'Please ensure that the input image has shape (c,w,h) the current shape is {ref.shape}'
+            raise RuntimeWarning(msg)
+
+
         # messy fix to include file name in log file
         self.ref_path = ref_path
         self.img_path = img_path
@@ -268,13 +281,6 @@ class TractionForce(object):
         else:
             roi = None
         
-        if len(img.shape) != 4:
-            msg = f'Please ensure that the input image has shape (f,c,w,h) the current shape is {img.shape}'
-            raise RuntimeWarning(msg)
-        
-        if len(ref.shape) != 3:
-            msg = f'Please ensure that the input image has shape (f,c,w,h) the current shape is {ref.shape}'
-            raise RuntimeWarning(msg)
 
         return img, ref, roi
 
