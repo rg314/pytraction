@@ -37,6 +37,7 @@ class TractionForce(object):
         self.window_size = window_size
         self.E = E
         self.s = s
+        self.meshsize = meshsize
 
         self.TFM_obj = PyTraction(
             meshsize = meshsize, # grid spacing in pix
@@ -324,8 +325,8 @@ class TractionForce(object):
                 img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi_i, img_stack, crop)
 
                 # do piv
-                piv_obj = PIV(window_size=window_size)
-                x, y, u, v, stack = piv_obj.iterative_piv(img_crop, ref_crop)
+                self.piv_obj = PIV(window_size=window_size)
+                x, y, u, v, stack = self.piv_obj.iterative_piv(img_crop, ref_crop)
 
                 beta = self.get_noise(x,y,u,v, roi=False)
 
@@ -356,6 +357,12 @@ class TractionForce(object):
             # create attributes
             log['metadata'].attrs['img_path'] = np.void(self.img_path.encode())
             log['metadata'].attrs['ref_path'] = np.void(self.ref_path.encode())
+            log['metadata'].attrs['meshsize'] = np.void(str(self.meshsize).encode())
+            log['metadata'].attrs['window_size'] = np.void(str(self.window_size).encode())
+
+            for k, v in self.piv_obj.kwargs.items():
+                log['metadata'].attrs[k] = np.void(str(v).encode())
+
             
             # to recover
             # h5py.File(log)['metadata'].attrs['img_path'].tobytes()

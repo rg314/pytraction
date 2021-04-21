@@ -15,7 +15,7 @@ traction_obj = TractionForce(pix_per_mu, E=E)
 
 img, ref, _ = traction_obj.load_data(img_path, ref_path)
 
-log = traction_obj.process_stack(img[:1,:,:,:], ref)
+log = traction_obj.process_stack(img[:3,:,:,:], ref)
 
 print(log)
 
