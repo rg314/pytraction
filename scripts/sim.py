@@ -1,5 +1,5 @@
-from pytraction.core import TractionForce
-from pytraction.utils import plot
+from pytraction import TractionForce
+from pytraction import plot
 
 from skimage import io
 import numpy as np

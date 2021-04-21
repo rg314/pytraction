@@ -37,9 +37,9 @@ def allign_slice(img, ref):
 
 def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive-definite.
     n = A.shape[0]
-    LU = splinalg.splu(A,diag_pivot_thresh=0) # sparse LU decomposition
+    LU = splinalg.splu(A.tocsc(),diag_pivot_thresh=0) # sparse LU decomposition
     
-    return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5) )
+    return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5)).tocsr()
 
 
 def normalize(x):
@@ -69,19 +69,20 @@ def bead_density(img):
 
 
 def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
-    traction_map = log['traction_map'][frame]
-    cell_roi = log['cell_roi'][frame]
-    x, y = log['pos'][frame]
-    u, v = log['vec'][frame]
-    L = log['L'][frame]
+    log = log[frame]
+    traction_map = log['traction_map'][0]
+    cell_roi = log['cell_roi'][0]
+    x, y = log['pos'][0]
+    u, v = log['vec'][0]
+    L = log['L'][0]
     vmax = np.max(traction_map) if not vmax else vmax
 
     fig, ax = plt.subplots(1,2, figsize=figsize)
     im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
     ax[0].quiver(x, y, u, v)
 
-    if mask and isinstance(log['mask_roi'][frame], np.ndarray):
-        mask = log['mask_roi'][frame] 
+    if mask and log['mask_roi'][0].shape:
+        mask = log['mask_roi'][0] 
         mask = np.ma.masked_where(mask == 255, mask)
         ax[0].imshow(mask, cmap='jet', extent=[x.min(), x.max(), y.min(), y.max()])
 

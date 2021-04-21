@@ -24,6 +24,7 @@ import pytraction.net.segment as pynet
 from pytraction.utils import normalize, allign_slice, bead_density, plot
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
+from pytraction.dataset import Dataset
 from pytraction.utils import HiddenPrints
 
 
@@ -345,13 +346,21 @@ class TractionForce(object):
                 log[f'L/{frame}'] = L_optimal
                 log[f'pos/{frame}'] = pos
                 log[f'vec/{frame}'] = vec
-                log[f'img_path/{frame}'] = self.img_path
-                log[f'ref_path/{frame}'] = self.ref_path
-                log[f'E/{frame}'] = self.E
-                log[f's/{frame}'] = self.s
+                log[f'E/{frame}'] = np.array(self.E)
+                log[f's/{frame}'] = np.array(self.s)
+            
+            
+            # create metadata with a placeholder
+            log['metadata'] = 0
 
+            # create attributes
+            log['metadata'].attrs['img_path'] = np.void(self.img_path.encode())
+            log['metadata'].attrs['ref_path'] = np.void(self.ref_path.encode())
+            
+            # to recover
+            # h5py.File(log)['metadata'].attrs['img_path'].tobytes()
 
-        return bytes_hdf5
+        return Dataset(bytes_hdf5)
 
 
 

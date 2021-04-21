@@ -1,11 +1,10 @@
-from pytraction.core import TractionForce
-from pytraction.utils import plot
+from pytraction import TractionForce, plot, Dataset
 
 from skimage import io
 import numpy as np
 import matplotlib.pyplot as plt
 
-# # # ######### Example 1
+# # ######### Example 1
 pix_per_mu = 1.3
 E = 100 # Young's modulus in Pa
 
@@ -16,10 +15,9 @@ traction_obj = TractionForce(pix_per_mu, E=E)
 
 img, ref, _ = traction_obj.load_data(img_path, ref_path)
 
-log = traction_obj.process_stack(img[:3,:,:,:], ref)
+log = traction_obj.process_stack(img[:1,:,:,:], ref)
 
-plot(log, frame=0)
-# plt.show()
+print(log)
 
 
 # # # # ########## Example 2

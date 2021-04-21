@@ -34,7 +34,7 @@ def minus_logevidence(alpha, beta, C_a, BX_a, X, fuu, constant, Ftux,Ftuy,E,s,cl
     uu = np.sum(np.sum(Ftux1*np.conj(Ftux1) + Ftuy1*np.conj(Ftuy1)))/(0.5*aa[0])
     # uu = np.real(uu)
 
-    evidence_value = -0.5*(-alpha*ff-beta*uu -logdetA +aa[1]*np.log(alpha)+constant)
+    evidence_value = np.real(-0.5*(-alpha*ff-beta*uu -logdetA +aa[1]*np.log(alpha)+constant))
     return evidence_value
 
 
