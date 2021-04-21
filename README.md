@@ -132,8 +132,8 @@ The following code show an basic example. Please make sure you download example 
 For basic usage:
 
 ```
-from pytraction.core import TractionForce
-from pytraction.utils import plot
+from pytraction import TractionForce
+from pytraction import plot
 
 pix_per_mu = 1.3 # The number of pixels per micron 
 E = 100 # Youngs modulus in Pa

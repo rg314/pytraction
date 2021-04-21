@@ -1,27 +1,32 @@
-import cv2 
 import os
-from skimage import io
-import pandas as pd
-import numpy as np
-import torch
-import segmentation_models_pytorch as smp
-from collections import defaultdict
-from read_roi import read_roi_file
-from shapely import geometry
+import io
+import h5py
 import pickle
 import zipfile 
+import tempfile
+
+import cv2 
+import skimage
+import numpy as np
+import pandas as pd
 from scipy.spatial import distance
+
+
+import torch
+import segmentation_models_pytorch as smp
+from google_drive_downloader import GoogleDriveDownloader as gdd
+
+from shapely import geometry
+from read_roi import read_roi_file
 
 from pytraction.piv import PIV
 import pytraction.net.segment as pynet 
 from pytraction.utils import normalize, allign_slice, bead_density, plot
 from pytraction.traction_force import PyTraction
 from pytraction.net.dataloader import get_preprocessing
+from pytraction.dataset import Dataset
 from pytraction.utils import HiddenPrints
 
-
-from google_drive_downloader import GoogleDriveDownloader as gdd
-import tempfile
 
 class TractionForce(object):
 
@@ -32,6 +37,7 @@ class TractionForce(object):
         self.window_size = window_size
         self.E = E
         self.s = s
+        self.meshsize = meshsize
 
         self.TFM_obj = PyTraction(
             meshsize = meshsize, # grid spacing in pix
@@ -233,8 +239,8 @@ class TractionForce(object):
         :param ref_path: Reference path for to nd image with shape (c,w,h)
         :param roi_path: 
         """
-        img = io.imread(img_path)
-        ref = io.imread(ref_path)
+        img = skimage.io.imread(img_path)
+        ref = skimage.io.imread(ref_path)
 
         if not isinstance(img,np.ndarray) or not isinstance(ref, np.ndarray):
             msg = f'Image data not loaded for {img_path} or {ref_path}'
@@ -296,55 +302,72 @@ class TractionForce(object):
     def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False):
         nframes = img_stack.shape[0]
 
-        log = defaultdict(list)
-        for frame in list(range(nframes)):
-            # load plane
-            img = normalize(np.array(img_stack[frame, bead_channel, :, :]))
-            ref = normalize(np.array(ref_stack[bead_channel,:,:]))
+        bytes_hdf5 = io.BytesIO()
 
-            window_size = self.get_window_size(img)
+        with h5py.File(bytes_hdf5, 'w') as log:
 
-            if isinstance(roi, list):
-                assert len(roi) == nframes, f'Warning ROI list has len {len(roi)} which is not equal to \
-                                              the number of frames ({nframes}). This would suggest that you do not \
-                                              have the correct number of ROIs in the zip file.'
-                roi_i = roi[frame]
-            else:
-                roi_i = roi
+            for frame in list(range(nframes)):
+                # load plane
+                img = normalize(np.array(img_stack[frame, bead_channel, :, :]))
+                ref = normalize(np.array(ref_stack[bead_channel,:,:]))
+
+                window_size = self.get_window_size(img)
+
+                if isinstance(roi, list):
+                    assert len(roi) == nframes, f'Warning ROI list has len {len(roi)} which is not equal to \
+                                                the number of frames ({nframes}). This would suggest that you do not \
+                                                have the correct number of ROIs in the zip file.'
+                    roi_i = roi[frame]
+                else:
+                    roi_i = roi
+
+                
+                img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi_i, img_stack, crop)
+
+                # do piv
+                self.piv_obj = PIV(window_size=window_size)
+                x, y, u, v, stack = self.piv_obj.iterative_piv(img_crop, ref_crop)
+
+                beta = self.get_noise(x,y,u,v, roi=False)
+
+                # make pos and vecs for TFM
+                pos = np.array([x.flatten(), y.flatten()])
+                vec = np.array([u.flatten(), v.flatten()])
+
+                # compute traction map
+                traction_map, f_n_m, L_optimal = self.TFM_obj.calculate_traction_map(pos, vec, beta)
+
+                log[f'frame/{frame}'] = frame
+                log[f'traction_map/{frame}'] = traction_map
+                log[f'force_field/{frame}'] = f_n_m
+                log[f'stack_bead_roi/{frame}'] = stack
+                log[f'cell_roi/{frame}'] = cell_img_crop
+                log[f'mask_roi/{frame}'] = 0 if mask_crop is None else mask_crop
+                log[f'beta/{frame}'] = beta
+                log[f'L/{frame}'] = L_optimal
+                log[f'pos/{frame}'] = pos
+                log[f'vec/{frame}'] = vec
+                log[f'E/{frame}'] = np.array(self.E)
+                log[f's/{frame}'] = np.array(self.s)
+            
+            
+            # create metadata with a placeholder
+            log['metadata'] = 0
+
+            # create attributes
+            log['metadata'].attrs['img_path'] = np.void(self.img_path.encode())
+            log['metadata'].attrs['ref_path'] = np.void(self.ref_path.encode())
+            log['metadata'].attrs['meshsize'] = np.void(str(self.meshsize).encode())
+            log['metadata'].attrs['window_size'] = np.void(str(self.window_size).encode())
+
+            for k, v in self.piv_obj.kwargs.items():
+                log['metadata'].attrs[k] = np.void(str(v).encode())
 
             
-            img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi_i, img_stack, crop)
+            # to recover
+            # h5py.File(log)['metadata'].attrs['img_path'].tobytes()
 
-            # do piv
-            piv_obj = PIV(window_size=window_size)
-            x, y, u, v, stack = piv_obj.iterative_piv(img_crop, ref_crop)
-
-            beta = self.get_noise(x,y,u,v, roi=False)
-
-            # make pos and vecs for TFM
-            pos = np.array([x.flatten(), y.flatten()])
-            vec = np.array([u.flatten(), v.flatten()])
-
-            # compute traction map
-            traction_map, f_n_m, L_optimal = self.TFM_obj.calculate_traction_map(pos, vec, beta)
-
-            log['frame'].append(frame)
-            log['traction_map'].append(traction_map)
-            log['force_field'].append(f_n_m)
-            log['stack_bead_roi'].append(stack)
-            log['cell_roi'].append(cell_img_crop)
-            log['mask_roi'].append(mask_crop)
-            log['beta'].append(beta)
-            log['L'].append(L_optimal)
-            log['pos'].append(pos)
-            log['vec'].append(vec)
-            log['img_path'].append(self.img_path)
-            log['ref_path'].append(self.ref_path)
-            log['E'].append(self.E)
-            log['s'].append(self.s)
-
-
-        return pd.DataFrame(log)
+        return Dataset(bytes_hdf5)
 
 
 

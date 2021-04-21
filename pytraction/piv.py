@@ -71,19 +71,24 @@ class PIV(object):
         img = allign_slice(img, ref)
         stack = np.stack([img, ref])
 
+
+        self.kwargs = dict(
+            min_window_size=self.window_size, 
+            overlap_ratio=0.5, 
+            coarse_factor=0, 
+            dt=self.dt, 
+            validation_method='mean_velocity', 
+            trust_1st_iter=0, 
+            validation_iter=3, 
+            tolerance=1.5, 
+            nb_iter_max=1, 
+            sig2noise_method='peak2peak',
+        )
+
         x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
                                     img.astype(np.int32), 
-                                    np.ones_like(ref).astype(np.int32), 
-                                    min_window_size=self.window_size, 
-                                    overlap_ratio=0.5, 
-                                    coarse_factor=0, 
-                                    dt=self.dt, 
-                                    validation_method='mean_velocity', 
-                                    trust_1st_iter=0, 
-                                    validation_iter=3, 
-                                    tolerance=1.5, 
-                                    nb_iter_max=1, 
-                                    sig2noise_method='peak2peak')
+                                    np.ones_like(ref).astype(np.int32),
+                                    **self.kwargs)
         
 
 
