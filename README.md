@@ -24,6 +24,32 @@ Bayesian Traction Force Microscopy
 
 :clock9: Write manuscript
 
+
+## Colab examples
+Please try running the following notebooks on google colab. You will need to generate a [personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
+
+[Example 1: Basic usage with an image stack and reference image in the correct format](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example1.ipynb)
+
+[Example 2: Basic usage with an ROI](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example2.ipynb)
+
+[Example 3: Basic usage unexpected image formats](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example3.ipynb)
+
+
+### TL;DR
+Navigate to folder where you want to install and ensure you have [miniconda](https://docs.conda.io/en/latest/miniconda.html) and [git]( https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed and run the following commands.
+
+```
+git clone https://github.com/rg314/pytraction.git
+conda create -n pytraction python=3.8
+conda activate pytraction
+pip install pytraction/
+cd pytraction
+python scripts/get_example_data.py
+pip install notebook
+python -m ipykernel install --user --name=pytraction
+jupyter notebook scripts/usage.ipynb
+```
+
 ## Draft manuscript
 
 Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC) or [OneDrive link to folder](https://universityofcambridgecloud-my.sharepoint.com/:f:/g/personal/rdg31_cam_ac_uk/EldvnfWg5k1NsGt5L7bthSYBFdrhbKrX1aaTAoxSKeag9g). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
@@ -97,30 +123,6 @@ For basic usage run
 jupyter notebook scripts/usage.ipynb
 ```
 
-
-### TL;DR
-Navigate to folder where you want to install and ensure you have [miniconda](https://docs.conda.io/en/latest/miniconda.html) and [git]( https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed and run the following commands.
-
-```
-git clone https://github.com/rg314/pytraction.git
-conda create -n pytraction python=3.8
-conda activate pytraction
-pip install pytraction/
-cd pytraction
-python scripts/get_example_data.py
-pip install notebook
-python -m ipykernel install --user --name=pytraction
-jupyter notebook scripts/usage.ipynb
-```
-
-## Colab examples
-Please try running the following notebooks on google colab. You will need to generate a [personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
-
-[Example 1: Basic usage with an image stack and reference image in the correct format](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example1.ipynb)
-
-[Example 2: Basic usage with an ROI](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example2.ipynb)
-
-[Example 3: Basic usage unexpected image formats](https://colab.research.google.com/github/rg314/pytraction/blob/main/examples/example3.ipynb)
 
 ## Example
 
