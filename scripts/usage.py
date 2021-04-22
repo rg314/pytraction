@@ -3,6 +3,10 @@ from pytraction import TractionForce, plot, Dataset
 from skimage import io
 import numpy as np
 import matplotlib.pyplot as plt
+import yaml
+
+config = yaml.load(open('config/config.yaml'))
+
 
 # # ######### Example 1
 pix_per_mu = 1.3
@@ -11,35 +15,15 @@ E = 100 # Young's modulus in Pa
 img_path = 'data/example1/e01_pos1_axon1.tif'
 ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E=E)
+traction_obj = TractionForce(pix_per_mu, E, config=config)
 
 img, ref, _ = traction_obj.load_data(img_path, ref_path)
 
-log = traction_obj.process_stack(img[:3,:,:,:], ref)
-
-
-def get_tiff_stack(log, frame):
-    import cv2
-    import numpy as np
-    import tifffile 
-
-    cell = log['cell_roi'].iloc[frame][0]
-    traction_map = log['traction_map'].iloc[frame][0]
-    beads = log['stack_bead_roi'].iloc[frame][0] 
-    tfm = cv2.resize(traction_map, dsize=(cell.shape[1],cell.shape[0]) , interpolation=cv2.INTER_CUBIC)
-    
-    stack = np.stack([cell, tfm])
-
-    tiff = np.concatenate([beads,stack], axis=0)
-
-    tifffile.imwrite(f'test.tiff', tiff, imagej=True, metadata={'axes': 'CYX'})
-    return tiff
-
+log = traction_obj.process_stack(img[:1,:,:,:], ref)
 
 print(log)
 
-
-# # # # ########## Example 2
+# ########## Example 2
 # pix_per_mu = 9.8138
 # E = 1000 # Young's modulus in Pa
 
