@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import segmentation_models_pytorch as smp
 from collections import defaultdict
-import concurrent
+import concurrent.futures
 from read_roi import read_roi_file
 from shapely import geometry
 import pickle
@@ -285,7 +285,7 @@ class TractionForce(object):
 
         return img, ref, roi
 
-    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=0, num_workers:int=4):
+    def process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=0, num_workers:int=None):
         '''
         TODO: docstring
         '''
@@ -297,21 +297,23 @@ class TractionForce(object):
             output = self._process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop, num_workers)
         return output
 
-    def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, num_workers:int=4):
+    def _process_stack(self, img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, num_workers:int=None):
         '''
         TODO: docstring
         '''
+        #TODO: optionally turn multiprocessing on or off. This should be more intelligent than just multiprocess with workers=1
+
         # init log defaultdict
         log = defaultdict(list)
 
         # use concurrent future threads to parallelise execution
-        with concurrent.futures.ThreadPoolExecutor(max_workers = num_workers) as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers = num_workers) as executor:
 
             # submit a _process_frame() run on an executor for each frame
             nframes = img_stack.shape[0]
             futures = {
                 executor.submit(
-                    self._process_frame, frm, img_stack, ref_stack, bead_channel, roi, frame, crop
+                    self._process_frame, frm, img_stack, ref_stack, bead_channel, roi, frame, crop, nframes
                 ): frm for frm in list(range(nframes))
             }
 
@@ -336,7 +338,7 @@ class TractionForce(object):
 
         return pd.DataFrame(log)
 
-    def _process_frame(self, frame, img_stack, ref_stack, bead_channel, roi, frame2, crop):
+    def _process_frame(self, frame, img_stack, ref_stack, bead_channel, roi, frame2, crop, nframes):
         '''
         TODO: docstring
         '''
@@ -354,7 +356,6 @@ class TractionForce(object):
         else:
             roi_i = roi
 
-        
         img_crop, ref_crop, cell_img_crop, mask_crop = self.get_roi(img, ref, frame, roi_i, img_stack, crop)
 
         # do piv
