@@ -15,6 +15,7 @@ class Dataset(object):
         if isinstance(log, str):
             log = io.BytesIO(self.load(log))
         self.log = log
+        self.columns = self._columns()
 
     def __str__(self):
         df = self.__getitem__(0)
@@ -43,6 +44,10 @@ class Dataset(object):
                 for i in range(self.__len__()):
                     items[idx].append(np.array(f[f'{idx}/{i}']))
             return pd.DataFrame(items)
+
+    def _columns(self):
+        return self.__getitem__(0).columns
+
     
     def metadata(self):
         with h5py.File(self.log) as f:

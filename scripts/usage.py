@@ -17,6 +17,25 @@ img, ref, _ = traction_obj.load_data(img_path, ref_path)
 
 log = traction_obj.process_stack(img[:3,:,:,:], ref)
 
+
+def get_tiff_stack(log, frame):
+    import cv2
+    import numpy as np
+    import tifffile 
+
+    cell = log['cell_roi'].iloc[frame][0]
+    traction_map = log['traction_map'].iloc[frame][0]
+    beads = log['stack_bead_roi'].iloc[frame][0] 
+    tfm = cv2.resize(traction_map, dsize=(cell.shape[1],cell.shape[0]) , interpolation=cv2.INTER_CUBIC)
+    
+    stack = np.stack([cell, tfm])
+
+    tiff = np.concatenate([beads,stack], axis=0)
+
+    tifffile.imwrite(f'test.tiff', tiff, imagej=True, metadata={'axes': 'CYX'})
+    return tiff
+
+
 print(log)
 
 
