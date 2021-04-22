@@ -2,18 +2,16 @@ import os
 import pandas as pd
 import numpy as np
 
-from pytraction.traction_force import PyTraction
+from pytraction.process import calculate_traction_map
 
 
 def test_matlab():
 
 
-    traction = PyTraction(
-        meshsize = 10, # grid spacing in pix
-        pix_per_mu = 1.3,
-        E = 10000, # Young's modulus in Pa
-        s = 0.3, # Poisson's ratio
-        )
+    meshsize = 10 # grid spacing in pix
+    pix_per_mu = 1.3
+    E = 10000 # Young's modulus in Pa
+    s = 0.3 # Poisson's ratio
 
     df = pd.read_csv(f'data{os.sep}matlab_data.csv')
 
@@ -30,7 +28,8 @@ def test_matlab():
     vec = np.array([u.flatten(), v.flatten()])
 
 
-    traction_magnitude, f_n_m, L = traction.calculate_traction_map(pos, vec, beta)
+    traction_magnitude, f_n_m, L = calculate_traction_map(pos, vec, beta, meshsize, s, pix_per_mu, E)
+
 
     output = [np.array([16,  7, 22, 22, 14,  5, 17, 10,  8, 20, 33, 30, 38, 16,  4, 23, 24,
        29, 20, 12, 50, 51, 50, 36, 22, 18, 12, 14, 60, 57, 42, 32, 15, 27,
@@ -165,3 +164,4 @@ def test_matlab():
             assert c == d, 'output traction map does not match'
 
     assert int(np.real(L)) == 145, f'L estimated incorrectly {np.real(L)}'
+

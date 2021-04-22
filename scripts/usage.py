@@ -3,6 +3,10 @@ from pytraction import TractionForce, plot, Dataset
 from skimage import io
 import numpy as np
 import matplotlib.pyplot as plt
+import yaml
+
+config = yaml.load(open('config/config.yaml'))
+
 
 # # ######### Example 1
 pix_per_mu = 1.3
@@ -11,18 +15,11 @@ E = 100 # Young's modulus in Pa
 img_path = 'data/example1/e01_pos1_axon1.tif'
 ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E=E)
+traction_obj = TractionForce(pix_per_mu, E, config=config)
 
 img, ref, _ = traction_obj.load_data(img_path, ref_path)
 
-log = traction_obj.process_stack(img[:3,:,:,:], ref)
 
-print(log)
-
-
-# # # # ########## Example 2
-pix_per_mu = 9.8138
-E = 1000 # Young's modulus in Pa
 
 img_path = 'data/example2/1kPa-2-Position006.tif'
 ref_path = 'data/example2/1kPa-2-Position006_ref.tif'

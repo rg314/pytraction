@@ -1,14 +1,16 @@
 import os 
 import sys
 
-from scipy.sparse import linalg as splinalg
 import scipy.sparse as sparse
+from scipy.interpolate import griddata
+from scipy.sparse import linalg as splinalg
 
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 
 def allign_slice(img, ref):
@@ -41,6 +43,28 @@ def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive
     
     return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5)).tocsr()
 
+
+def interp_vec2grid(pos, vec, cluster_size, grid_mat=np.array([])):
+    if not grid_mat:
+        max_eck = [np.max(pos[0]), np.max(pos[1])]
+        min_eck = [np.min(pos[0]), np.min(pos[1])]
+
+        i_max = np.floor((max_eck[0]-min_eck[0])/cluster_size)
+        j_max = np.floor((max_eck[1]-min_eck[1])/cluster_size)
+        
+        i_max = i_max - np.mod(i_max,2)
+        j_max = j_max - np.mod(j_max,2)
+
+        X = min_eck[0] + np.arange(0.5, i_max)*cluster_size
+        Y = min_eck[1] + np.arange(0.5, j_max)*cluster_size
+
+        x, y = np.meshgrid(X, Y)
+
+        grid_mat = np.stack([x,y], axis=2)
+
+        u = griddata(pos.T, vec.T, (x,y),method='cubic')
+
+        return grid_mat,u, int(i_max), int(j_max)
 
 def normalize(x):
     x = (x - np.min(x)) / (np.max(x) - np.min(x))
