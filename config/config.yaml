@@ -10,11 +10,14 @@ piv:
   tolerance: 1.5 
   nb_iter_max: 1 
   sig2noise_method: peak2peak
-  
+
 tfm: 
-  E: 100
-  s: 0.5
-  meshsize: 10
-  pix_per_mu: 1.3
+  E: None
+  s: None
+  meshsize: None
+  pix_per_mu: None
+
+settings:
+  bead_channel: 0
       
     

@@ -32,18 +32,15 @@ class TractionForce(object):
 
         self.device = device
         self.segment = segment
-        self.model, self.pre_fn = self.get_model()
+        self.model, self.pre_fn = self._get_cnn_model(device)
 
         if not config:
-            self.config = self.get_config(min_window_size, dt, E, s, meshsize, scaling_factor)
+            self.config = self._get_config(min_window_size, dt, E, s, meshsize, scaling_factor)
         else:
-            self.config = config
-            config['tfm']['E'] = E,
-            config['tfm']['pix_per_mu'] = scaling_factor
-            config['piv']['min_window_size'] = min_window_size
+            self.config = self._config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor)
 
     @staticmethod
-    def get_config(min_window_size, dt, E, s, meshsize, scaling_factor):
+    def _get_config(min_window_size, dt, E, s, meshsize, scaling_factor):
         config = {
                 'piv':{
                     'min_window_size':min_window_size, 
@@ -66,36 +63,50 @@ class TractionForce(object):
                     }
         return config
 
+    @staticmethod
+    def _config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor):
+        config['tfm']['E'] = E,
+        config['tfm']['pix_per_mu'] = scaling_factor
+        config['tfm']['meshsize'] = meshsize
+        config['tfm']['s'] = s
+        config['piv']['min_window_size'] = min_window_size
+        config['piv']['dt'] = dt
+        return config
+
+    @staticmethod
+    def _get_knn_model():
+        file_id = '1xQuGSUdW3nIO5lAm7DQb567sMEQgHmQD'
+        tmpdir = tempfile.gettempdir()
+        destination = f'{tmpdir}/knn.zip'
+
+
+        gdd.download_file_from_google_drive(file_id=file_id,
+                                        dest_path=destination,
+                                        unzip=True,
+                                        showsize=False,
+                                        overwrite=False)
+
+        with open(f'{tmpdir}/knn.pickle', 'rb') as f:
+            knn = pickle.load(f)
+        
+        return knn
+
+
     def get_min_window_size(self, img):
         if not self.config['piv']['min_window_size']:
             density = bead_density(img)
 
-            file_id = '1xQuGSUdW3nIO5lAm7DQb567sMEQgHmQD'
-            tmpdir = tempfile.gettempdir()
-            destination = f'{tmpdir}/knn.zip'
-
-
-            gdd.download_file_from_google_drive(file_id=file_id,
-                                            dest_path=destination,
-                                            unzip=True,
-                                            showsize=False,
-                                            overwrite=False)
-
-            with open(f'{tmpdir}/knn.pickle', 'rb') as f:
-                knn = pickle.load(f)
-            
+            knn = self._get_knn_model()
             min_window_size = knn.predict([[density]])
-
-            min_window_size = int(min_window_size)
-
             print(f'Automatically selected window size of {min_window_size}')
 
-            return min_window_size
+            return int(min_window_size)
         else:
             return self.config['piv']['min_window_size']
 
 
-    def get_model(self):
+    @staticmethod
+    def _get_cnn_model(device):
         # data_20210320.zip
         file_id = '1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n'
         tmpdir = tempfile.gettempdir()
@@ -109,96 +120,93 @@ class TractionForce(object):
                                         overwrite=False)
 
 
-
         # currently using model from 20210316
         best_model = torch.load(f'{tmpdir}/best_model_1.pth', map_location='cpu')
-        if self.device == 'cuda' and torch.cuda.is_available():
+        if device == 'cuda' and torch.cuda.is_available():
             best_model = best_model.to('cuda')
         preproc_fn = smp.encoders.get_preprocessing_fn('efficientnet-b1', 'imagenet')
         preprocessing_fn = get_preprocessing(preproc_fn)
 
         return best_model, preprocessing_fn
 
+    @staticmethod
+    def _located_most_central_cell(counters, mask):
+        image_center = np.asarray(mask.shape) / 2
+        image_center = tuple(image_center.astype('int32'))
 
-    def get_roi(self, img, ref, frame, roi, img_stack, crop):
+        segmented = []
+        for contour in contours:
+            # find center of each contour
+            M = cv2.moments(contour)
+            center_X = int(M["m10"] / M["m00"])
+            center_Y = int(M["m01"] / M["m00"])
+            contour_center = (center_X, center_Y)
+        
+            # calculate distance to image_center
+            distances_to_center = (distance.euclidean(image_center, contour_center))
+        
+            # save to a list of dictionaries
+            segmented.append({
+                'contour': contour, 
+                'center': contour_center, 
+                'distance_to_center': distances_to_center
+                }
+                )
+    
+        sorted_cells = sorted(segmented, key=lambda i: i['distance_to_center'])
+        pts=sorted_cells[0]['contour'] #the biggest contour
+        return pts
+
+    def _cnn_segment_cell(self, cell_img):
+        mask = pynet.get_mask(cell_img, self.model, self.pre_fn, device=self.device)
+        return np.array(mask.astype('bool'), dtype='uint8')
+
+    @staticmethod
+    def _detect_cell_instances_from_segmentation(mask):
+        contours, _ = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        return contours
+
+    @staticmethod
+    def _predict_roi(self, cell_img):
+        # segment image 
+        mask = self._cnn_segment_cell(cell_img)
+        # get instance outlines 
+        contours = self._detect_cell_instances_from_segmentation(mask)
+        # find most central cell
+        pts = self._located_most_central_cell(counters, mask)
+        # get roi
+        polyx, polyy = np.squeeze(pts, axis=1).T
+        return polyx, polyy
+
+    def _get_polygon_and_roi(self, img_stack, frame, roi):
         cell_img = np.array(img_stack[frame, 1, :, :])
         cell_img = normalize(cell_img)
 
-        if not roi and self.segment:
-            mask = pynet.get_mask(cell_img, self.model, self.pre_fn, device=self.device)
+        if self.segment:
+            polyx, polyy = self._predict_roi(cell_img)
+            pts = np.array(list(zip(polyx, polyy)), np.int32)
+            polygon = geometry.Polygon(pts)
+            pts = pts.reshape((-1,1,2))
+            return polygon, pts
 
-            mask = np.array(mask.astype('bool'), dtype='uint8')
 
-            contours, _ = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-            # areas = [cv2.contourArea(c) for c in contours]
-            # sorted_areas = np.sort(areas)
-
-            image_center = np.asarray(mask.shape) / 2
-            image_center = tuple(image_center.astype('int32'))
-
-            segmented = []
-            for contour in contours:
-                # find center of each contour
-                M = cv2.moments(contour)
-                center_X = int(M["m10"] / M["m00"])
-                center_Y = int(M["m01"] / M["m00"])
-                contour_center = (center_X, center_Y)
-            
-                # calculate distance to image_center
-                distances_to_center = (distance.euclidean(image_center, contour_center))
-            
-                # save to a list of dictionaries
-                segmented.append({
-                    'contour': contour, 
-                    'center': contour_center, 
-                    'distance_to_center': distances_to_center
-                    }
-                    )
-    
-    
-            sorted_cells = sorted(segmented, key=lambda i: i['distance_to_center'])
-
-            #bounding box (red)
-            # pts=contours[areas.index(sorted_areas[-1])] #the biggest contour
-            pts=sorted_cells[0]['contour'] #the biggest contour
-
-            cv2.drawContours(cell_img, [pts], -1, (255), 1, cv2.LINE_AA)
-
-            polyx, polyy = np.squeeze(pts, axis=1).T
-            roi = True
+        elif roi:
+            polyx, polyy = roi[0], roi[1]
+            pts = np.array(list(zip(polyx, polyy)), np.int32)
+            polygon = geometry.Polygon(pts)
+            pts = pts.reshape((-1,1,2))
+            return polygon, pts
         
-        if roi: 
-            shift=0.2
-            if not self.segment:
-                polyx = roi[0]
-                polyy = roi[1]
+        else:
+            return None, None
 
-            minx, maxx = np.min(polyx), np.max(polyx)
-            miny, maxy = np.min(polyy), np.max(polyy)
+    def _crop_roi(img, ref, frame, img_stack, pts):
 
-            midx = minx + (maxx-minx) // 2
-            midy = miny + (maxy-miny) // 2
-
-            pixel_shift = int(max(midx, midy) * shift) // 2
-
-            # need to raise as an issues
-            rescaled = []
-            for (xi,yi) in zip(polyx, polyy):
-                # apply shift
-                rescaled.append([xi, yi])
-
-            self.polygon = geometry.Polygon(rescaled)
-
-            x,y,w,h = cv2.boundingRect(np.array(rescaled))
-            pad = 50
-
-
-            if not self.segment:
-                pts = np.array(list(zip(polyx, polyy)), np.int32)
-                pts = pts.reshape((-1,1,2))
-                cv2.polylines(cell_img,[pts],True,(255), thickness=3)
+            cv2.polylines(cell_img,[pts],True,(255), thickness=3)
 
             if crop:
+                pad = 50
+                x,y,w,h = cv2.boundingRect(pts)
                 img_crop = img[y-pad:y+h+pad, x-pad:x+w+pad]
                 ref_crop = ref[y-pad:y+h+pad, x-pad:x+w+pad]
 
@@ -220,23 +228,22 @@ class TractionForce(object):
 
 
 
-    def get_noise(self, x,y,u,v, roi=False):
-        if not roi:
+    def get_noise(self, x,y,u,v, polygon):
+        if polygon:
+            noise = []
+            for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):
+                p1 = geometry.Point([x0,y0])
+                if not p1.within(polygon):
+                    noise.append(np.array([u0, v0]))
+
+            noise_vec = np.array(noise)
+            varnoise = np.var(noise_vec)
+            beta = 1/varnoise
+        else:
             noise = 10
             xn, yn, un, vn = x[:noise],y[:noise],u[:noise],v[:noise]
             noise_vec = np.array([un.flatten(), vn.flatten()])
 
-            varnoise = np.var(noise_vec)
-            beta = 1/varnoise
-        
-        elif roi:
-            noise = []
-            for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):
-                p1 = geometry.Point([x0,y0])
-                if not p1.within(self.polygon):
-                    noise.append(np.array([u0, v0]))
-
-            noise_vec = np.array(noise)
             varnoise = np.var(noise_vec)
             beta = 1/varnoise
         return beta
