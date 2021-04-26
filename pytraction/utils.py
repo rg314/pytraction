@@ -92,7 +92,7 @@ def bead_density(img):
     return area_beads
 
 
-def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
+def plot(log, frame=0, vmin=None, vmax=None, mask=True, figsize=(16,16)):
     log = log[frame]
     traction_map = log['traction_map'][0]
     cell_roi = log['cell_roi'][0]
@@ -102,7 +102,7 @@ def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
     vmax = np.max(traction_map) if not vmax else vmax
 
     fig, ax = plt.subplots(1,2, figsize=figsize)
-    im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
+    im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=vmin, vmax=vmax)
     ax[0].quiver(x, y, u, v)
 
     if mask and log['mask_roi'][0].shape:

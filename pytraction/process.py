@@ -17,6 +17,10 @@ def iterative_piv(img, ref, config):
     # return aligned stack
     stack = np.stack([img, ref])
 
+    # ref = cv2.copyMakeBorder(ref, 0, 250, 0, 250, cv2.BORDER_REFLECT)
+    # img = cv2.copyMakeBorder(img, 0, 250, 0, 250, cv2.BORDER_REFLECT)
+
+
     # compute iterative PIV using openpiv
     x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
                                 img.astype(np.int32), 

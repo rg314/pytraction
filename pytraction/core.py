@@ -189,7 +189,7 @@ class TractionForce(object):
 
             self.polygon = geometry.Polygon(rescaled)
 
-            x,y,w,h = cv2.boundingRect(np.array(rescaled))
+            x,y,w,h = cv2.boundingRect(np.array(rescaled, dtype=np.int))
             pad = 50
 
 
