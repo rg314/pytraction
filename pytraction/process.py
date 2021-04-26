@@ -21,7 +21,7 @@ def iterative_piv(img, ref, config):
     x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
                                 img.astype(np.int32), 
                                 np.ones_like(ref).astype(np.int32),
-                                **config['piv'])
+                                **config.config['piv'])
     
     return x,y,u,v, stack
 

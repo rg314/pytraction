@@ -4,23 +4,19 @@ import h5py
 import pickle
 import zipfile 
 import tempfile
+from read_roi import read_roi_file
 
-import cv2 
 import skimage
 import numpy as np
 import pandas as pd
-from scipy.spatial import distance
-
+from shapely import geometry
 
 import torch
 import segmentation_models_pytorch as smp
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
-from shapely import geometry
-from read_roi import read_roi_file
 
-import pytraction.net.segment as pynet 
-from pytraction.utils import normalize, allign_slice, bead_density, plot, HiddenPrints
+from pytraction.preprocess import _get_raw_frames, _get_min_window_size, _get_polygon_and_roi, _create_crop_mask_targets, _load_frame_roi
 from pytraction.process import calculate_traction_map, iterative_piv
 from pytraction.net.dataloader import get_preprocessing
 from pytraction.dataset import Dataset
@@ -29,13 +25,18 @@ from pytraction.dataset import Dataset
 class TractionForceConfig(object):
 
     def __init__(self, scaling_factor, E, min_window_size=None, dt=1, s=0.5, meshsize=10, device='cpu', segment=False, config=None):
+        self.device = device
         self.model, self.pre_fn = self._get_cnn_model(device)
-        self.kmm = self._get_knn_model()
+        self.knn = self._get_knn_model()
 
         if not config:
             self.config = self._get_config(min_window_size, dt, E, s, meshsize, scaling_factor, segment)
         else:
             self.config = self._config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor)
+
+
+    def __repr__():
+        pass
 
     @staticmethod
     def _get_config(min_window_size, dt, E, s, meshsize, scaling_factor, segment):
@@ -154,15 +155,14 @@ class TractionForceConfig(object):
         return rois
 
     def _roi_loaders(self, roi_path):
-
         if '.csv' in roi_path:
             return self._load_csv_roi(roi_path)
 
         elif '.roi' in roi_path:
-            return self._load_roireader_roi(roi_path, recursive_lookup=self._recursive_lookup)
+            return self._load_roireader_roi(roi_path)
 
         elif '.zip' in roi_path:
-            return self._load_zip_roi(roi_path, recursive_lookup=self._recursive_lookup)
+            return self._load_zip_roi(roi_path)
 
         else:
             return None
@@ -193,17 +193,17 @@ class TractionForceConfig(object):
 
         return img, ref, roi
 
-def _find_uv_outside_polygon(x,y,u,v, polygon):
+def _find_uv_outside_single_polygon(x,y,u,v, polygon):
     noise = []
-    for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):
+    for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):        
         p1 = geometry.Point([x0,y0])
         if not p1.within(polygon):
             noise.append(np.array([u0, v0]))
     return np.array(noise)
 
-def get_noise(x,y,u,v, polygon):
+def _get_noise(x,y,u,v, polygon):
     if polygon:
-        noise_vec = _find_uv_outside_polygon(x,y,u,v, polygon)
+        noise_vec = _find_uv_outside_single_polygon(x,y,u,v, polygon)
     else:
         noise = 10
         xn, yn, un, vn = x[:noise],y[:noise],u[:noise],v[:noise]
@@ -237,8 +237,9 @@ def _write_metadata_results(results, config):
         results['metadata'].attrs[k] = np.void(str(v).encode())
     return results
 
-def _process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False):
+def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0):
     nframes = img_stack.shape[0]
+    
 
     bytes_hdf5 = io.BytesIO()
 
@@ -249,23 +250,23 @@ def _process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1,
             img, ref, cell_img = _get_raw_frames(img_stack, ref_stack, frame, bead_channel, cell_channel)
 
             # get_minimum window_size
-            min_window_size = get_min_window_size(img, config)
-            config['piv']['min_window_size'] = min_window_size
+            min_window_size = _get_min_window_size(img, config)
+            config.config['piv']['min_window_size'] = min_window_size
 
             # load_rois
             roi_i = _load_frame_roi(roi, frame, nframes)
 
             # compute polygon and roi 
-            polygon, pts = _get_polygon_and_roi(img_stack, frame, roi_i)
+            polygon, pts = _get_polygon_and_roi(cell_img, roi_i, config)
 
             # crop targets
-            img, ref, cell_img, mask = _create_crop_mask_targets(img, ref, cell_img, pts, pad=50)
+            img, ref, cell_img, mask = _create_crop_mask_targets(img, ref, cell_img, pts, crop, pad=50)
 
-            # do piv
+            # do PIV
             x, y, u, v, stack = iterative_piv(img, ref, config)
 
             # calculate noise 
-            beta = get_noise(x,y,u,v, roi=False)
+            beta = _get_noise(x,y,u,v, polygon)
 
             # make pos and vecs for TFM
             pos = np.array([x.flatten(), y.flatten()])
@@ -273,28 +274,19 @@ def _process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1,
 
             # compute traction map
             traction_map, f_n_m, L_optimal = calculate_traction_map(pos, vec, beta, 
-                config['tfm']['meshsize'], 
-                config['tfm']['s'], 
-                config['tfm']['pix_per_mu'], 
-                config['tfm']['E']
+                config.config['tfm']['meshsize'], 
+                config.config['tfm']['s'], 
+                config.config['tfm']['pix_per_mu'], 
+                config.config['tfm']['E']
                 )
 
             # write results for frame to h5
             results = _write_frame_results(results, frame, traction_map, f_n_m, stack, cell_img, mask, beta, L_optimal, pos, vec)
 
         # write metadata to results
-        results = _write_metadata_results(results, config)
+        results = _write_metadata_results(results, config.config)
 
         # to recover
         # h5py.File(results)['metadata'].attrs['img_path'].tobytes()
 
     return Dataset(bytes_hdf5)
-
-def process_stack(img_stack, ref_stack, bead_channel=0, roi=False, frame=[], crop=False, verbose=0):
-    if verbose == 0:
-        print('Processing stacks')
-        with HiddenPrints():
-            tfm_dataset = _process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
-    elif verbose == 1:
-        tfm_dataset = _process_stack(img_stack, ref_stack, bead_channel, roi, frame, crop)
-    return tfm_dataset

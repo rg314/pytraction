@@ -1,8 +1,17 @@
+import numpy as np 
+import cv2 
+from shapely import geometry
+from scipy.spatial import distance
+
+from pytraction.net import segment as pynet
+from pytraction.utils import normalize, allign_slice, bead_density
+
+
 # get the images of interest
-def _get_reference_frame(ref_stack, frame, bead_channel)
+def _get_reference_frame(ref_stack, frame, bead_channel):
     return normalize(np.array(ref_stack[bead_channel,:,:]))
 
-def _get_img_frame(img_stack, frame, bead_channel)
+def _get_img_frame(img_stack, frame, bead_channel):
     return normalize(np.array(img_stack[frame, bead_channel, :, :]))
 
 def _get_cell_img(img_stack, frame, cell_channel):
@@ -16,8 +25,8 @@ def _get_raw_frames(img_stack, ref_stack, frame, bead_channel, cell_channel):
 
 
 # get the window size
-def get_min_window_size(img, config):
-    if not config['piv']['min_window_size']:
+def _get_min_window_size(img, config):
+    if not config.config['piv']['min_window_size']:
         density = bead_density(img)
 
         knn = config.knn
@@ -26,7 +35,7 @@ def get_min_window_size(img, config):
 
         return int(min_window_size)
     else:
-        return config['piv']['min_window_size']
+        return config.config['piv']['min_window_size']
 
 
 # load frame roi
@@ -39,10 +48,8 @@ def _load_frame_roi(roi, frame, nframes):
     else:
         return roi
 
-
-
 # get roi
-def _cnn_segment_cell(self, cell_img, config):
+def _cnn_segment_cell(cell_img, config):
     mask = pynet.get_mask(cell_img, config.model, config.pre_fn, device=config.device)
     return np.array(mask.astype('bool'), dtype='uint8')
 
@@ -56,7 +63,7 @@ def _located_most_central_cell(counters, mask):
     image_center = tuple(image_center.astype('int32'))
 
     segmented = []
-    for contour in contours:
+    for contour in counters:
         # find center of each contour
         M = cv2.moments(contour)
         center_X = int(M["m10"] / M["m00"])
@@ -78,20 +85,20 @@ def _located_most_central_cell(counters, mask):
     pts=sorted_cells[0]['contour'] #the biggest contour
     return pts
 
-def _predict_roi(self, cell_img, config):
+def _predict_roi(cell_img, config):
     # segment image 
     mask = _cnn_segment_cell(cell_img, config)
     # get instance outlines 
     contours = _detect_cell_instances_from_segmentation(mask)
     # find most central cell
-    pts = _located_most_central_cell(counters, mask)
+    pts = _located_most_central_cell(contours, mask)
     # get roi
     polyx, polyy = np.squeeze(pts, axis=1).T
     return polyx, polyy
 
 
 def _get_polygon_and_roi(cell_img, roi, config):
-    if config['settings']['segment']:
+    if config.config['settings']['segment']:
         polyx, polyy = _predict_roi(cell_img, config)
         pts = np.array(list(zip(polyx, polyy)), np.int32)
         polygon = geometry.Polygon(pts)
@@ -137,11 +144,14 @@ def _crop_roi(img, ref, cell_img, pts, pad=50):
 
     return img_crop, ref_crop, cell_img_crop, mask_crop
 
-def _create_crop_mask_targets(img, ref, cell_img, pts, pad=50)
-    if crop and roi:
+def _create_crop_mask_targets(img, ref, cell_img, pts, crop, pad=50):
+    if crop and isinstance(pts, np.ndarray):
         img, ref, cell_img, mask = _crop_roi(img, ref, cell_img, pts, pad)
+        return img, ref, cell_img, mask
 
-    if not crop and roi:
-        mask = _create_mask(cell_img)
-
-    return img, ref, cell_img, mask
+    if not crop and isinstance(pts, np.ndarray):
+        mask = _create_mask(cell_img, pts)
+        return img, ref, cell_img, mask
+    
+    else:
+        return img, ref, cell_img, None 

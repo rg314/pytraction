@@ -1,4 +1,4 @@
-from pytraction import TractionForce, plot, Dataset
+from pytraction import TractionForceConfig, plot, Dataset, process_stack
 
 from skimage import io
 import numpy as np
@@ -15,23 +15,28 @@ E = 100 # Young's modulus in Pa
 img_path = 'data/example1/e01_pos1_axon1.tif'
 ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E, config=config)
+traction_config = TractionForceConfig(pix_per_mu, E, config=config)
 
-img, ref, _ = traction_obj.load_data(img_path, ref_path)
+img, ref, _ = traction_config.load_data(img_path, ref_path)
+
+log = process_stack(img, ref, traction_config)
+
+print(log)
 
 
+# # # ########## Example 2
+pix_per_mu = 1
+E = 3000 # Young's modulus in Pa
 
 img_path = 'data/example2/1kPa-2-Position006.tif'
 ref_path = 'data/example2/1kPa-2-Position006_ref.tif'
 roi_path = 'data/example2/1kPa-2-Position006.roi'
 
-traction_obj = TractionForce(pix_per_mu, E=E)
+traction_config = TractionForceConfig(pix_per_mu, E=E)
 
-img, ref, roi = traction_obj.load_data(img_path, ref_path, roi_path)
+img, ref, roi = traction_config.load_data(img_path, ref_path, roi_path)
 
-log = traction_obj.process_stack(img, ref, roi=roi)
-
-print(log)
+log = process_stack(img, ref, traction_config, roi=roi, crop=True)
 
 
 # # # ########## Example 3
@@ -61,10 +66,11 @@ io.imsave('data/example3/tfm-ref.tif', ref)
 img_path = 'data/example3/tfm.tif'
 ref_path = 'data/example3/tfm-ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E=E, segment=True)
+traction_config = TractionForceConfig(pix_per_mu, E=E, segment=True)
 
-img, ref, roi = traction_obj.load_data(img_path, ref_path)
+img, ref, roi = traction_config.load_data(img_path, ref_path)
 
-log = traction_obj.process_stack(img, ref, roi=roi)
+log = process_stack(img, ref, traction_config, roi=roi, crop=True)
 
 print(log)
+
