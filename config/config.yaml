@@ -19,5 +19,8 @@ tfm:
 
 settings:
   bead_channel: 0
+  cell_channel: 1
+  segment: False
+  device: cpu
       
     
