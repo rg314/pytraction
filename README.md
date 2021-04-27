@@ -18,10 +18,6 @@ Bayesian Traction Force Microscopy
 
 :clock9: Tests for edge cases on input
 
-:clock9: Save to hdf5 rather than csv
-
-:clock9: Simple hdf5 usage
-
 :clock9: Write manuscript
 
 
