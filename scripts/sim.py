@@ -1,5 +1,5 @@
-from pytraction import TractionForce
-from pytraction import plot
+from pytraction import TractionForceConfig
+from pytraction import plot, prcoess_stack
 
 from skimage import io
 import numpy as np
@@ -12,9 +12,9 @@ E = 100 # Young's modulus in Pa
 img_path = 'data/sim/tfm.tif'
 ref_path = 'data/sim/tfm-ref.tif'
 
-traction_obj = TractionForce(pix_per_mu, E=E)
+traction_config = TractionForceConfig(pix_per_mu, E=E)
 
-img, ref, _ = traction_obj.load_data(img_path, ref_path)
+img, ref, _ = traction_config.load_data(img_path, ref_path)
 
 x = np.array([200, 200, 1024-200, 1024-200])
 y = np.array([1024-200, 200, 1024-200, 200])
@@ -22,7 +22,7 @@ y = np.array([1024-200, 200, 1024-200, 200])
 
 
 
-log = traction_obj.process_stack(img, ref, roi=(x,y))
+log = process_stack(img, ref, traction_config, roi=(x,y))
 
 for frame in range(len(log)):
     plot(log, frame=frame)
