@@ -143,7 +143,7 @@ ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
 traction_config = TractionForceConfig(pix_per_mu, E=E)
 img, ref, _ = traction_config.load_data(img_path, ref_path)
-log = process_stack(img, ref)
+log = process_stack(img, ref, traction_config)
 
 plot(log, frame=0)
 plt.show()
