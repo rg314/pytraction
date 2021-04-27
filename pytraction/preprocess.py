@@ -11,34 +11,68 @@ from pytraction.utils import normalize, allign_slice, bead_density
 def _get_reference_frame(ref_stack, bead_channel):
     """Normalizes the reference frame and drops all other axes except the bead
     channel and returns a (w, h) np.ndarray.
-    :param ref_stack: Reference image stack with shape (c, w, h) 
-    :type ref_stack: numpy.ndarray :param bead_channel: Channel, c of reference bead
-    image, bead_channel < c. :type bead_channel: int
-    :return: Reference bead frame with shape (w,h) dtype uint8 
-    :rtype: numpy.ndarray
+
+    Args:
+        ref_stack (numpy.ndarray): Reference image stack with shape (c, w, h) 
+        bead_channel (int): Channel, c of reference bead image, bead_channel < c. 
+
+    Returns:
+        numpy.ndarray: Reference bead frame with shape (w,h) dtype uint8 
     """
+    
+    assert bead_channel < ref_stack.shape[0], ValueError(f'bead_channel > number of image channels')
+
     return normalize(np.array(ref_stack[bead_channel,:,:]))
 
-def _get_img_frame(img_stack, frame, bead_channel):
-    """Normalizes the current time frame (frame) and drops all other axes except the bead
-    channel and returns a (w, h) np.ndarray.
 
-    :param ref_stack: Image stack with shape (t, c, w, h) 
-    :type ref_stack: numpy.ndarray :param bead_channel: Channel, c of beads
-    image, bead_channel < c. :type bead_channel: int
-    :param frame: 
-    :type frame: 
-    :return: Image of bead frame with shape (w,h) dtype uint8 at frame
-    :rtype: numpy.ndarray
+def _get_img_frame(img_stack, frame, bead_channel):
+    """Normalizes the cell image (frame) and drops all other axes except the
+    cell image channel and returns a (w, h) np.ndarray.
+
+    Args:
+        img_stack (numpy.ndarray): Image stack with shape (t, c, w, h) 
+        frame (int): Image stack of at time frame
+        bead_channel (int): Channel, c of frame bead image, bead_channel < c. 
+
+    Returns:
+        numpy.ndarray: Image of cell frame at time (frame) with shape (w,h) dtype uint8 at frame
     """
+    assert bead_channel < img_stack.shape[0], ValueError(f'frame > number of time stacks')
+    assert bead_channel < img_stack.shape[1], ValueError(f'bead_channel > number of image channels')
+    
     return normalize(np.array(img_stack[frame, bead_channel, :, :]))
 
+def _get_cell_img(img_stack, frame, cell_channel): 
+    """Normalizes the cell image (frame) and drops all other axes except the
+    cell image channel and returns a (w, h) np.ndarray.
 
-def _get_cell_img(img_stack, frame, cell_channel):
+    Args:
+        img_stack (numpy.ndarray): Image stack with shape (t, c, w, h) 
+        frame (int): Image stack of at time frame
+        cell_channel (int): Channel, c of cell image, cell_channel < c. 
 
+    Returns:
+        numpy.ndarray: Image of cell frame at time (frame) with shape (w,h) dtype uint8 at frame
+    """
+    assert cell_channel < img_stack.shape[0], ValueError(f'frame > number of time stacks')
+    assert cell_channel < img_stack.shape[1], ValueError(f'cell_channel > number of image channels')
+    
     return normalize(np.array(img_stack[frame, cell_channel, :, :]))
 
+
 def _get_raw_frames(img_stack, ref_stack, frame, bead_channel, cell_channel):
+    """[summary]
+
+    Args:
+        img_stack ([type]): [description]
+        ref_stack ([type]): [description]
+        frame ([type]): [description]
+        bead_channel ([type]): [description]
+        cell_channel ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     img = _get_img_frame(img_stack, frame, bead_channel)
     ref = _get_reference_frame(ref_stack, bead_channel)
     cell_img = _get_cell_img(img_stack, frame, cell_channel)
