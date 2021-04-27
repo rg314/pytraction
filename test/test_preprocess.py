@@ -1,3 +1,4 @@
+import numpy as np
 from pytraction.preprocess import (
     _get_reference_frame,
     _get_img_frame,
@@ -16,7 +17,33 @@ from pytraction.preprocess import (
     )
 
 def test_get_reference_frame():
-    pass
+    # 1 channel
+    ref_stack1 = np.ones((1,500,500))
+    bead_channel1 = 0
+    
+    # 2 channel
+    ref_stack2 = np.ones((2,500,500))
+    bead_channel2 = 1
+
+    # 3 channel
+    ref_stack3 = np.ones((3,500,500))
+    bead_channel3 = 2
+
+    # 4 channel
+    ref_stack4 = np.ones((4,500,500))
+    bead_channel4 = 3
+
+    ref1 = _get_reference_frame(ref_stack1, bead_channel1)
+    ref2 = _get_reference_frame(ref_stack2, bead_channel2)
+    ref3 = _get_reference_frame(ref_stack3, bead_channel2)
+    ref4 = _get_reference_frame(ref_stack4, bead_channel2)
+
+    assert ref1.shape == (500,500)
+    assert ref2.shape == (500,500)
+    assert ref2.shape == (500,500)
+    assert ref2.shape == (500,500)
+ 
+
 def test_get_img_frame():
     pass
 def test_get_cell_img():
