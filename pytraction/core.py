@@ -4,7 +4,7 @@ import h5py
 import pickle
 import zipfile 
 import tempfile
-from typing import Type, Tuple
+from typing import Type, Tuple, Union, IO
 from read_roi import read_roi_file
 
 import skimage
@@ -124,7 +124,7 @@ class TractionForceConfig(object):
         return config
 
 
-    # @staticmethod
+    @staticmethod
     def _get_cnn_model(device: str) -> tuple:
         """[summary]
 
@@ -201,7 +201,15 @@ class TractionForceConfig(object):
 
 
     @staticmethod
-    def _load_csv_roi(roi_path):
+    def _load_csv_roi(roi_path: str) -> tuple:
+        """[summary]
+
+        Args:
+            roi_path (str): [description]
+
+        Returns:
+            tuple: [description]
+        """
         x, y = pd.read_csv(roi_path).T.values
         return (x,y)
 
@@ -212,7 +220,15 @@ class TractionForceConfig(object):
 
         return (x,y)
 
-    def _load_zip_roi(self, roi_path):
+    def _load_zip_roi(self, roi_path: str) -> list:
+        """[summary]
+
+        Args:
+            roi_path (str): [description]
+
+        Returns:
+            list: [description]
+        """
         rois = []
         with zipfile.ZipFile(roi_path) as ziproi:
             for file in ziproi.namelist():
@@ -224,7 +240,15 @@ class TractionForceConfig(object):
                 os.remove(roi_path_file)
         return rois
 
-    def _roi_loaders(self, roi_path):
+    def _roi_loaders(self, roi_path: str) -> Union[tuple, list, None]:
+        """[summary]
+
+        Args:
+            roi_path (str): [description]
+
+        Returns:
+            Union[tuple, list, None]: [description]
+        """
         if '.csv' in roi_path:
             return self._load_csv_roi(roi_path)
 
@@ -238,11 +262,21 @@ class TractionForceConfig(object):
             return None
 
 
-    def load_data(self, img_path, ref_path, roi_path=''):
-        """
-        :param img_path: Image path for to nd image with shape (f,c,w,h)
-        :param ref_path: Reference path for to nd image with shape (c,w,h)
-        :param roi_path: 
+    def load_data(self, img_path:str, ref_path:str, roi_path='') -> Tuple[np.ndarray, np.ndarray, tuple]:
+        """[summary]
+
+        Args:
+            img_path (str): [description]
+            ref_path (str): [description]
+            roi_path (str, optional): [description]. Defaults to ''.
+
+        Raises:
+            TypeError: [description]
+            RuntimeWarning: [description]
+            RuntimeWarning: [description]
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, tuple]: [description]
         """
         img = skimage.io.imread(img_path)
         ref = skimage.io.imread(ref_path)
@@ -263,7 +297,20 @@ class TractionForceConfig(object):
 
         return img, ref, roi
 
-def _find_uv_outside_single_polygon(x,y,u,v, polygon):
+def _find_uv_outside_single_polygon(x:np.ndarray,y:np.ndarray,u:np.ndarray,v:np.ndarray, 
+    polygon:np.ndarray) -> np.ndarray:
+    """[summary]
+
+    Args:
+        x (np.ndarray): [description]
+        y (np.ndarray): [description]
+        u (np.ndarray): [description]
+        v (np.ndarray): [description]
+        polygon (np.ndarray): [description]
+
+    Returns:
+        np.ndarray: [description]
+    """
     noise = []
     for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):        
         p1 = geometry.Point([x0,y0])
@@ -271,7 +318,19 @@ def _find_uv_outside_single_polygon(x,y,u,v, polygon):
             noise.append(np.array([u0, v0]))
     return np.array(noise)
 
-def _get_noise(x,y,u,v, polygon):
+def _get_noise(x:np.ndarray,y:np.ndarray,u:np.ndarray,v:np.ndarray, polygon:np.ndarray) -> float:
+    """[summary]
+
+    Args:
+        x (np.ndarray): [description]
+        y (np.ndarray): [description]
+        u (np.ndarray): [description]
+        v (np.ndarray): [description]
+        polygon (np.ndarray): [description]
+
+    Returns:
+        float: [description]
+    """
     if polygon:
         noise_vec = _find_uv_outside_single_polygon(x,y,u,v, polygon)
     else:
@@ -283,7 +342,28 @@ def _get_noise(x,y,u,v, polygon):
     beta = 1/varnoise
     return beta
 
-def _write_frame_results(results, frame, traction_map, f_n_m, stack, cell_img, mask, beta, L_optimal, pos, vec):
+def _write_frame_results(results:IO[bytes], frame:int, traction_map:np.ndarray, f_n_m:np.ndarray, 
+    stack:np.ndarray, cell_img:np.ndarray, mask:np.ndarray, beta:float, 
+    L_optimal:float, pos:np.ndarray, vec:np.ndarray) -> IO[bytes]:
+    """[summary]
+
+    Args:
+        results (IO[bytes]): [description]
+        frame (int): [description]
+        traction_map (np.ndarray): [description]
+        f_n_m (np.ndarray): [description]
+        stack (np.ndarray): [description]
+        cell_img (np.ndarray): [description]
+        mask (np.ndarray): [description]
+        beta (float): [description]
+        L_optimal (float): [description]
+        pos (np.ndarray): [description]
+        vec (np.ndarray): [description]
+
+    Returns:
+        IO[bytes]: [description]
+    """
+
     results[f'frame/{frame}'] = frame
     results[f'traction_map/{frame}'] = traction_map
     results[f'force_field/{frame}'] = f_n_m
@@ -296,7 +376,16 @@ def _write_frame_results(results, frame, traction_map, f_n_m, stack, cell_img, m
     results[f'vec/{frame}'] = vec
     return results
 
-def _write_metadata_results(results, config):
+def _write_metadata_results(results:IO[bytes], config: Type['TractionForceConfig']) -> IO[bytes]:
+    """[summary]
+
+    Args:
+        results (IO[bytes]): [description]
+        config (Type[): [description]
+
+    Returns:
+        IO[bytes]: [description]
+    """
     # create metadata with a placeholder
     results['metadata'] = 0
 
@@ -307,7 +396,24 @@ def _write_metadata_results(results, config):
         results['metadata'].attrs[k] = np.void(str(v).encode())
     return results
 
-def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0):
+def process_stack(img_stack:np.ndarray, ref_stack:np.ndarray, config:Type['TractionForceConfig'], 
+    bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0) -> Type[Dataset]:
+    """[summary]
+
+    Args:
+        img_stack (np.ndarray): [description]
+        ref_stack (np.ndarray): [description]
+        config (Type[): [description]
+        bead_channel (int, optional): [description]. Defaults to 0.
+        cell_channel (int, optional): [description]. Defaults to 1.
+        roi (bool, optional): [description]. Defaults to False.
+        frame (list, optional): [description]. Defaults to [].
+        crop (bool, optional): [description]. Defaults to False.
+        verbose (int, optional): [description]. Defaults to 0.
+
+    Returns:
+        Type[Dataset]: [description]
+    """
     nframes = img_stack.shape[0]
     
 
