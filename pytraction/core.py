@@ -4,6 +4,7 @@ import h5py
 import pickle
 import zipfile 
 import tempfile
+from typing import Type, Tuple
 from read_roi import read_roi_file
 
 import skimage
@@ -24,7 +25,21 @@ from pytraction.dataset import Dataset
 
 class TractionForceConfig(object):
 
-    def __init__(self, scaling_factor, E, min_window_size=None, dt=1, s=0.5, meshsize=10, device='cpu', segment=False, config=None):
+    def __init__(self, scaling_factor: float, E: float, min_window_size=None, dt=1, s=0.5, meshsize=10, device='cpu', segment=False, config=None):
+        """[summary]
+
+        Args:
+            scaling_factor (float): [description]
+            E (float): [description]
+            min_window_size ([type], optional): [description]. Defaults to None.
+            dt (int, optional): [description]. Defaults to 1.
+            s (float, optional): [description]. Defaults to 0.5.
+            meshsize (int, optional): [description]. Defaults to 10.
+            device (str, optional): [description]. Defaults to 'cpu'.
+            segment (bool, optional): [description]. Defaults to False.
+            config ([type], optional): [description]. Defaults to None.
+        """
+
         self.device = device
         self.model, self.pre_fn = self._get_cnn_model(device)
         self.knn = self._get_knn_model()
@@ -39,7 +54,23 @@ class TractionForceConfig(object):
         pass
 
     @staticmethod
-    def _get_config(min_window_size, dt, E, s, meshsize, scaling_factor, segment):
+    def _get_config(min_window_size: int, dt: float, E: float, s: float, 
+        meshsize: int, scaling_factor: float, segment: bool) -> dict:
+        """[summary]
+
+        Args:
+            min_window_size (int): [description]
+            dt (float): [description]
+            E (float): [description]
+            s (float): [description]
+            meshsize (int): [description]
+            scaling_factor (float): [description]
+            segment (bool): [description]
+
+        Returns:
+            dict: [description]
+        """
+
         config = {
                 'piv':{
                     'min_window_size':min_window_size, 
@@ -67,7 +98,23 @@ class TractionForceConfig(object):
         return config
 
     @staticmethod
-    def _config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor):
+    def _config_ymal(config: dict, min_window_size: int, dt: float, 
+        E:float, s:float, meshsize: int, scaling_factor:float) -> dict:
+        """[summary]
+
+        Args:
+            config (dict): [description]
+            min_window_size (int): [description]
+            dt (float): [description]
+            E (float): [description]
+            s (float): [description]
+            meshsize (int): [description]
+            scaling_factor (float): [description]
+
+        Returns:
+            dict: [description]
+        """
+
         config['tfm']['E'] = E,
         config['tfm']['pix_per_mu'] = scaling_factor
         config['tfm']['meshsize'] = meshsize
@@ -77,8 +124,17 @@ class TractionForceConfig(object):
         return config
 
 
-    @staticmethod
-    def _get_cnn_model(device):
+    # @staticmethod
+    def _get_cnn_model(device: str) -> tuple:
+        """[summary]
+
+        Args:
+            device (str): [description]
+
+        Returns:
+            tuple: [description]
+        """
+
         # data_20210320.zip
         file_id = '1zShYcG8IMsMjB8hA6FcBTIZPfi_wDL4n'
         tmpdir = tempfile.gettempdir()
@@ -103,6 +159,12 @@ class TractionForceConfig(object):
 
     @staticmethod
     def _get_knn_model():
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
+
         file_id = '1xQuGSUdW3nIO5lAm7DQb567sMEQgHmQD'
         tmpdir = tempfile.gettempdir()
         destination = f'{tmpdir}/knn.zip'
@@ -120,8 +182,16 @@ class TractionForceConfig(object):
         return knn
 
 
+    def _recursive_lookup(self, k:str, d:dict) -> list:
+        """[summary]
 
-    def _recursive_lookup(self, k, d):
+        Args:
+            k (str): [description]
+            d (dict): [description]
+
+        Returns:
+            list: [description]
+        """
         if k in d: return d[k]
         for v in d.values():
             if isinstance(v, dict):
