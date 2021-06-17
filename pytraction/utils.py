@@ -34,7 +34,7 @@ def allign_slice(img, ref):
     # transformation matrix
     rows,cols = img.shape
     M = np.float32([[1,0,dx],[0,1,dy]])
-    return cv2.warpAffine(img,M,(cols,rows))
+    return dx, dy, cv2.warpAffine(img,M,(cols,rows))
 
 
 def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive-definite.

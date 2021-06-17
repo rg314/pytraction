@@ -12,18 +12,31 @@ def iterative_piv(img, ref, config):
     DOCSTRING TO-DO
     """
     # allign stacks
-    img = allign_slice(img, ref)
+    dx, dy, img = allign_slice(img, ref)
 
     # return aligned stack
     stack = np.stack([img, ref])
 
-    # compute iterative PIV using openpiv
-    x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
-                                img.astype(np.int32), 
-                                np.ones_like(ref).astype(np.int32),
-                                **config.config['piv'])
-    
-    return x,y,u,v, stack
+    x,y,u,v, mask = compute_piv(img, ref, config)
+
+    return x,y,u,v, (stack, dx, dy)
+
+def compute_piv(img, ref, config):
+    try:
+        # compute iterative PIV using openpiv
+        x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
+                                    img.astype(np.int32), 
+                                    np.ones_like(ref).astype(np.int32),
+                                    **config.config['piv'])
+        return x,y,u,v, mask
+    except Exception as e:
+        if isinstance(e, ZeroDivisionError):
+            config.config['piv']['min_window_size'] = config.config['piv']['min_window_size']//2
+            print(f"Reduced min window size to {config.config['piv']['min_window_size']} in recursive call")
+            return compute_piv(img, ref, config)
+        else:
+            raise e
+
 
 def calculate_traction_map(pos, vec, beta, meshsize, s, pix_per_mu, E):         
         
