@@ -10,6 +10,7 @@ import skimage
 import numpy as np
 import pandas as pd
 from shapely import geometry
+import functools
 
 import torch
 import segmentation_models_pytorch as smp
@@ -20,6 +21,7 @@ from pytraction.preprocess import _get_raw_frames, _get_min_window_size, _get_po
 from pytraction.process import calculate_traction_map, iterative_piv
 from pytraction.net.dataloader import get_preprocessing
 from pytraction.dataset import Dataset
+from pytraction.utils import normalize
 
 
 class TractionForceConfig(object):
@@ -72,7 +74,7 @@ class TractionForceConfig(object):
         config['tfm']['pix_per_mu'] = scaling_factor
         config['tfm']['meshsize'] = meshsize
         config['tfm']['s'] = s
-        config['piv']['min_window_size'] = min_window_size
+        # config['piv']['min_window_size'] = min_window_size
         config['piv']['dt'] = dt
         return config
 
@@ -201,9 +203,46 @@ def _find_uv_outside_single_polygon(x,y,u,v, polygon):
             noise.append(np.array([u0, v0]))
     return np.array(noise)
 
-def _get_noise(x,y,u,v, polygon):
+
+def _custom_noise(tiff_stack, config):
+
+    tmpdir = tempfile.gettempdir()
+    destination = f'{tmpdir}/tmp_noise.pickle'
+    cache = dict()
+
+    if os.path.exists(destination):
+        with open(destination, 'rb') as f:
+            cache = pickle.load(f)
+        beta = cache.get(tiff_stack, None)
+
+        if beta:
+            return beta
+
+    tiff_noise_stack = skimage.io.imread(tiff_stack)
+    un, vn = np.array([]), np.array([])
+    for i in range(tiff_noise_stack.shape[0]-3):
+        img = normalize(tiff_noise_stack[i,:,:])
+        ref = normalize(tiff_noise_stack[i+1,:,:])
+        x, y, u, v, stack = iterative_piv(img, ref, config)
+        un = np.append(un, u)
+        vn = np.append(vn, v)
+
+    noise_vec = np.array([un.flatten(), vn.flatten()])
+    varnoise = np.var(noise_vec)
+    beta = 1/varnoise
+    cache[tiff_stack] = beta
+
+    with open(destination, 'wb') as f:
+        pickle.dump(cache, f)
+
+
+    return beta
+
+def _get_noise(config, x=None,y=None,u=None,v=None, polygon=None, custom_noise=None):
     if polygon:
         noise_vec = _find_uv_outside_single_polygon(x,y,u,v, polygon)
+    elif custom_noise:
+        return _custom_noise(custom_noise, config)
     else:
         noise = 10
         xn, yn, un, vn = x[:noise],y[:noise],u[:noise],v[:noise]
@@ -237,7 +276,7 @@ def _write_metadata_results(results, config):
         results['metadata'].attrs[k] = np.void(str(v).encode())
     return results
 
-def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0):
+def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0, custom_noise=None):
     nframes = img_stack.shape[0]
     
 
@@ -263,10 +302,10 @@ def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, 
             img, ref, cell_img, mask = _create_crop_mask_targets(img, ref, cell_img, pts, crop, pad=50)
 
             # do PIV
-            x, y, u, v, stack = iterative_piv(img, ref, config)
+            x, y, u, v, (stack, dx, dy) = iterative_piv(img, ref, config)
 
             # calculate noise 
-            beta = _get_noise(x,y,u,v, polygon)
+            beta = _get_noise(config, x,y,u,v, polygon, custom_noise=custom_noise)
 
             # make pos and vecs for TFM
             pos = np.array([x.flatten(), y.flatten()])

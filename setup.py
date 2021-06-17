@@ -1,3 +1,4 @@
+
 from setuptools import setup
 
 
@@ -13,6 +14,8 @@ CLASSIFIERS = [
 ]
 
 REQUIREMENTS = [
+
+
     'attrs==20.3.0',
     'certifi==2020.12.5',
     'cycler==0.10.0',
@@ -48,7 +51,6 @@ REQUIREMENTS = [
     'tifffile==2021.3.5',
     'toml==0.10.2',
     'tqdm==4.59.0',
-    'torch>=1.8.0',
     'albumentations==0.5.2',
     'segmentation_models_pytorch==0.1.3',
     'shapely==1.7.1',
@@ -85,3 +87,6 @@ options = {
             'console_scripts': ["pytraction_get_data=pytraction.get_example_data:main"]},
 }
 setup(**options)
+
+
+

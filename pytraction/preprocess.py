@@ -8,39 +8,18 @@ from pytraction.utils import normalize, allign_slice, bead_density
 
 
 # get the images of interest
-def _get_reference_frame(ref_stack, bead_channel):
-    """Normalizes the reference frame and drops all other axes except the bead
-    channel and returns a (w, h) np.ndarray.
-    :param ref_stack: Reference image stack with shape (c, w, h) 
-    :type ref_stack: numpy.ndarray :param bead_channel: Channel, c of reference bead
-    image, bead_channel < c. :type bead_channel: int
-    :return: Reference bead frame with shape (w,h) dtype uint8 
-    :rtype: numpy.ndarray
-    """
+def _get_reference_frame(ref_stack, frame, bead_channel):
     return normalize(np.array(ref_stack[bead_channel,:,:]))
 
 def _get_img_frame(img_stack, frame, bead_channel):
-    """Normalizes the current time frame (frame) and drops all other axes except the bead
-    channel and returns a (w, h) np.ndarray.
-
-    :param ref_stack: Image stack with shape (t, c, w, h) 
-    :type ref_stack: numpy.ndarray :param bead_channel: Channel, c of beads
-    image, bead_channel < c. :type bead_channel: int
-    :param frame: 
-    :type frame: 
-    :return: Image of bead frame with shape (w,h) dtype uint8 at frame
-    :rtype: numpy.ndarray
-    """
     return normalize(np.array(img_stack[frame, bead_channel, :, :]))
 
-
 def _get_cell_img(img_stack, frame, cell_channel):
-
     return normalize(np.array(img_stack[frame, cell_channel, :, :]))
 
 def _get_raw_frames(img_stack, ref_stack, frame, bead_channel, cell_channel):
     img = _get_img_frame(img_stack, frame, bead_channel)
-    ref = _get_reference_frame(ref_stack, bead_channel)
+    ref = _get_reference_frame(ref_stack, frame, bead_channel)
     cell_img = _get_cell_img(img_stack, frame, cell_channel)
     return img, ref, cell_img
 

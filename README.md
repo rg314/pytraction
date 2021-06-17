@@ -18,6 +18,10 @@ Bayesian Traction Force Microscopy
 
 :clock9: Tests for edge cases on input
 
+:clock9: Save to hdf5 rather than csv
+
+:clock9: Simple hdf5 usage
+
 :clock9: Write manuscript
 
 
@@ -139,7 +143,7 @@ ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
 traction_config = TractionForceConfig(pix_per_mu, E=E)
 img, ref, _ = traction_config.load_data(img_path, ref_path)
-log = process_stack(img, ref, traction_config)
+log = process_stack(img, ref)
 
 plot(log, frame=0)
 plt.show()
