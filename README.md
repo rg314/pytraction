@@ -132,8 +132,8 @@ The following code show an basic example. Please make sure you download example 
 For basic usage:
 
 ```
-from pytraction import TractionForceConfig
-from pytraction import plot, prcoess_stack
+from pytraction.core import TractionForce
+from pytraction.utils import plot
 
 pix_per_mu = 1.3 # The number of pixels per micron 
 E = 100 # Youngs modulus in Pa
@@ -141,9 +141,9 @@ E = 100 # Youngs modulus in Pa
 img_path = 'data/example1/e01_pos1_axon1.tif'
 ref_path = 'data/example1/e01_pos1_axon1_ref.tif'
 
-traction_config = TractionForceConfig(pix_per_mu, E=E)
-img, ref, _ = traction_config.load_data(img_path, ref_path)
-log = process_stack(img, ref)
+traction_obj = TractionForce(pix_per_mu, E=E)
+img, ref, _ = traction_obj.load_data(img_path, ref_path)
+log = traction_obj.process_stack(img, ref)
 
 plot(log, frame=0)
 plt.show()

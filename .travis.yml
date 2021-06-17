@@ -4,7 +4,7 @@ python:
 # command to install dependencies
 install:
   - pip install codecov
-  - pip install .
+  - python setup.py install
   - pytraction_get_data
 script:
   - python setup.py test

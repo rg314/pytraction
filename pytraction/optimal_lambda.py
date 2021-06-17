@@ -7,7 +7,7 @@ import scipy.optimize as optimize
 import time 
 
 from pytraction.utils import sparse_cholesky
-from pytraction.fourier import reg_fourier_tfm
+from pytraction.reg_fourier import reg_fourier_tfm
 
 def minus_logevidence(alpha, beta, C_a, BX_a, X, fuu, constant, Ftux,Ftuy,E,s,cluster_size,i_max, j_max):
     aa = X.shape
@@ -34,7 +34,7 @@ def minus_logevidence(alpha, beta, C_a, BX_a, X, fuu, constant, Ftux,Ftuy,E,s,cl
     uu = np.sum(np.sum(Ftux1*np.conj(Ftux1) + Ftuy1*np.conj(Ftuy1)))/(0.5*aa[0])
     # uu = np.real(uu)
 
-    evidence_value = np.real(-0.5*(-alpha*ff-beta*uu -logdetA +aa[1]*np.log(alpha)+constant))
+    evidence_value = -0.5*(-alpha*ff-beta*uu -logdetA +aa[1]*np.log(alpha)+constant)
     return evidence_value
 
 
@@ -52,8 +52,12 @@ def optimal_lambda(beta,fuu,Ftux,Ftuy,E,s,cluster_size,i_max, j_max,X,sequence):
     alpha1 =1e-6
     alpha2 =1e6
 
+    print('Optimizing Lambda')
     target = partial(minus_logevidence, beta=beta, C_a=C_a, BX_a=BX_a, X=X, fuu=fuu, constant=constant, Ftux=Ftux,Ftuy=Ftuy,E=E,s=s,cluster_size=cluster_size,i_max=i_max, j_max=j_max)
+    start = time.time()
     alpha_opt = optimize.fminbound(target, alpha1, alpha2, disp=3)
+    end = time.time()
+    print(f'Time taken {end-start} s')
 
     evidence_one = -target(alpha_opt)
     lambda_2 = alpha_opt/beta

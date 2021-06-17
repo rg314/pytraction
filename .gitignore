@@ -8,7 +8,6 @@ data2/*
 *.zip
 examples/data/*
 examples/pytraction/*
-*.h5
 
 
 # Byte-compiled / optimized / DLL files

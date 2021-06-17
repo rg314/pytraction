@@ -1,16 +1,14 @@
 import os 
 import sys
 
-import scipy.sparse as sparse
-from scipy.interpolate import griddata
 from scipy.sparse import linalg as splinalg
+import scipy.sparse as sparse
 
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 
 
 def allign_slice(img, ref):
@@ -34,37 +32,15 @@ def allign_slice(img, ref):
     # transformation matrix
     rows,cols = img.shape
     M = np.float32([[1,0,dx],[0,1,dy]])
-    return dx, dy, cv2.warpAffine(img,M,(cols,rows))
+    return cv2.warpAffine(img,M,(cols,rows))
 
 
 def sparse_cholesky(A): # The input matrix A must be a sparse symmetric positive-definite.
     n = A.shape[0]
-    LU = splinalg.splu(A.tocsc(),diag_pivot_thresh=0) # sparse LU decomposition
+    LU = splinalg.splu(A,diag_pivot_thresh=0) # sparse LU decomposition
     
-    return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5)).tocsr()
+    return LU.L.dot( sparse.diags(LU.U.diagonal()**0.5) )
 
-
-def interp_vec2grid(pos, vec, cluster_size, grid_mat=np.array([])):
-    if not grid_mat:
-        max_eck = [np.max(pos[0]), np.max(pos[1])]
-        min_eck = [np.min(pos[0]), np.min(pos[1])]
-
-        i_max = np.floor((max_eck[0]-min_eck[0])/cluster_size)
-        j_max = np.floor((max_eck[1]-min_eck[1])/cluster_size)
-        
-        i_max = i_max - np.mod(i_max,2)
-        j_max = j_max - np.mod(j_max,2)
-
-        X = min_eck[0] + np.arange(0.5, i_max)*cluster_size
-        Y = min_eck[1] + np.arange(0.5, j_max)*cluster_size
-
-        x, y = np.meshgrid(X, Y)
-
-        grid_mat = np.stack([x,y], axis=2)
-
-        u = griddata(pos.T, vec.T, (x,y),method='cubic')
-
-        return grid_mat,u, int(i_max), int(j_max)
 
 def normalize(x):
     x = (x - np.min(x)) / (np.max(x) - np.min(x))
@@ -93,20 +69,19 @@ def bead_density(img):
 
 
 def plot(log, frame=0, vmax=None, mask=True, figsize=(16,16)):
-    log = log[frame]
-    traction_map = log['traction_map'][0]
-    cell_roi = log['cell_roi'][0]
-    x, y = log['pos'][0]
-    u, v = log['vec'][0]
-    L = log['L'][0]
+    traction_map = log['traction_map'][frame]
+    cell_roi = log['cell_roi'][frame]
+    x, y = log['pos'][frame]
+    u, v = log['vec'][frame]
+    L = log['L'][frame]
     vmax = np.max(traction_map) if not vmax else vmax
 
     fig, ax = plt.subplots(1,2, figsize=figsize)
     im1 = ax[0].imshow(traction_map, interpolation='bicubic', cmap='jet',extent=[x.min(), x.max(), y.min(), y.max()], vmin=0, vmax=vmax)
     ax[0].quiver(x, y, u, v)
 
-    if mask and log['mask_roi'][0].shape:
-        mask = log['mask_roi'][0] 
+    if mask and isinstance(log['mask_roi'][frame], np.ndarray):
+        mask = log['mask_roi'][frame] 
         mask = np.ma.masked_where(mask == 255, mask)
         ax[0].imshow(mask, cmap='jet', extent=[x.min(), x.max(), y.min(), y.max()])
 
