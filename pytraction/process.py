@@ -19,6 +19,9 @@ def iterative_piv(img, ref, config):
 
     x,y,u,v, mask = compute_piv(img, ref, config)
 
+
+    # fit angle vs mag to gaussian to filter
+
     return x,y,u,v, (stack, dx, dy)
 
 def compute_piv(img, ref, config):
