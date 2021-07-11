@@ -1,0 +1,18 @@
+version: "3.3"
+
+services:
+    deep-glass:
+        image: 'pytraction:lastest'
+        build:
+            context: ./
+            dockerfile: docker/Dockerfile
+        volumes: 
+            - ./:/pytraction
+        command: tail -f /dev/null
+        ipc: host
+        deploy:
+            resources:
+              reservations:
+                devices:
+                  - capabilities: [gpu]
+                    driver: nvidia
