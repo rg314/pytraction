@@ -14,8 +14,6 @@ CLASSIFIERS = [
 ]
 
 REQUIREMENTS = [
-
-
     'attrs==20.3.0',
     'certifi==2020.12.5',
     'cycler==0.10.0',
@@ -34,7 +32,7 @@ REQUIREMENTS = [
     'OpenPIV==0.23.4',
     'packaging==20.9',
     'pandas==1.2.3',
-    'Pillow==8.1.2',
+    'Pillow>=8.2.0',
     'pluggy==0.13.1',
     'py==1.10.0',
     'pyparsing==2.4.7',
@@ -46,7 +44,6 @@ REQUIREMENTS = [
     'scikit-image==0.18.1',
     'scipy==1.6.1',
     'Shapely==1.7.1',
-    'six==1.15.0',
     'smmap==3.0.5',
     'tifffile==2021.3.5',
     'toml==0.10.2',
