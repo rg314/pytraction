@@ -32,9 +32,9 @@ jobs:
     - name: Install locally
       run: |
         pip install .
-    - name: Get example data
-      run: |
-         pytraction_get_data
+    # - name: Get example data
+    #   run: |
+    #      pytraction_get_data
     # - name: Lint with flake8
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names
