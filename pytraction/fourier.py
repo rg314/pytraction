@@ -3,8 +3,22 @@ from scipy.sparse import spdiags
 from pytraction.utils import interp_vec2grid
 
 def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
-    
-    new_pos = pos + vec # shifted positions of data by displacements
+    """[summary]
+
+    Args:
+        pos ([type]): [description]
+        vec ([type]): [description]
+        meshsize ([type]): [description]
+        E ([type]): [description]
+        s ([type]): [description]
+        grid_mat ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+
+    # shifted positions of data by displacements
+    new_pos = pos + vec 
     
     # interpolate data onto rectangular grid. If grid_mat is empty, a new grid
     # will be constructed. Otherwise the grid in grid_mat will be used.
@@ -12,7 +26,7 @@ def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
 
     # shapes might be off here!
     # construct wave vectors
-    kx_vec = 2*np.pi/i_max/meshsize*np.concatenate([np.arange(0,(i_max-1)/2), -np.arange(i_max/2,0, -1)])
+    kx_vec = 2*np.pi / i_max / meshsize * np.concatenate([np.arange(0,(i_max-1)/2), -np.arange(i_max/2,0, -1)])
     kx_vec = np.expand_dims(kx_vec, axis=0)
     ky_vec = 2*np.pi/j_max/meshsize*np.concatenate([np.arange(0,(j_max-1)/2), -np.arange(j_max/2,0, -1)])
     ky_vec = np.expand_dims(ky_vec, axis=0)
@@ -47,7 +61,6 @@ def fourier_xu(pos, vec, meshsize, E, s, grid_mat):
     X1 = np.array([g1,g2]).T.flatten()
     X1 = np.expand_dims(X1, axis=1)
 
-  
     g3 = gf_xy.reshape(1, i_max*j_max)
     g4 = np.zeros(g3.shape)
 

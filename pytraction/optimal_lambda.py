@@ -49,23 +49,15 @@ def optimal_lambda(beta,fuu,Ftux,Ftuy,E,s,cluster_size,i_max, j_max,X,sequence):
 
     # Golden section search method to find alpha at minimum of -log(Evidence)
     # setting the range of parameter search. Change if maximum can not be found in your data
-    alpha1 =1e-6
-    alpha2 =1e6
+    alpha1 = 1e-6
+    alpha2 = 1e6
 
-    target = partial(minus_logevidence, beta=beta, C_a=C_a, BX_a=BX_a, X=X, fuu=fuu, constant=constant, Ftux=Ftux,Ftuy=Ftuy,E=E,s=s,cluster_size=cluster_size,i_max=i_max, j_max=j_max)
+    target = partial(minus_logevidence, beta=beta, C_a=C_a, BX_a=BX_a, X=X, fuu=fuu, 
+                    constant=constant, Ftux=Ftux, Ftuy=Ftuy, E=E, s=s, 
+                    cluster_size=cluster_size, i_max=i_max, j_max=j_max)
     alpha_opt = optimize.fminbound(target, alpha1, alpha2, disp=3)
 
     evidence_one = -target(alpha_opt)
-    lambda_2 = alpha_opt/beta
+    lambda_2 = alpha_opt / beta
 
-    return lambda_2,None,evidence_one
-
-
-
-
-
- 
- 
-
-
-
+    return lambda_2, None, evidence_one
