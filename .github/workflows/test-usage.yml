@@ -1,0 +1,11 @@
+name: docker-compose usage workflow
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the stack
+        run: docker-compose -f docker-compose.yml up -d
+      - name: Test
+        run: docker exec -it pytraction_pytraction_1 python scripts/usage.py
