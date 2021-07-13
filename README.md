@@ -1,6 +1,6 @@
 ![GitHub Python Workflow](https://github.com/rg314/pytraction/actions/workflows/python-package.yml/badge.svg)
 
-![codecov](https://codecov.io/gh/rg314/pytraction/branch/main/graph/badge.svg?token=5HLPLUWIXN)](https://codecov.io/gh/rg314/pytraction)
+[![codecov](https://codecov.io/gh/rg314/pytraction/branch/main/graph/badge.svg?token=5HLPLUWIXN)](https://codecov.io/gh/rg314/pytraction)
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/35999546/112598957-2fa21a00-8e07-11eb-847c-37f311e4c919.png" alt="PyTraction">
