@@ -1,5 +1,5 @@
 ![GitHub Python Workflow](https://github.com/rg314/pytraction/actions/workflows/python-package.yml/badge.svg)
-
+![GitHub Test docker-compose](https://github.com/rg314/pytraction/actions/workflows/test-docker-compose.yml/badge.svg)
 [![codecov](https://codecov.io/gh/rg314/pytraction/branch/main/graph/badge.svg?token=5HLPLUWIXN)](https://codecov.io/gh/rg314/pytraction)
 
 <p align="center">
