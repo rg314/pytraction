@@ -1,7 +1,7 @@
 version: "3.3"
 
 services:
-    deep-glass:
+    pytraction:
         image: 'pytraction:lastest'
         build:
             context: ./
@@ -9,3 +9,10 @@ services:
         volumes: 
             - ./:/pytraction
         command: tail -f /dev/null
+        ipc: host
+        deploy:
+            resources:
+              reservations:
+                devices:
+                  - capabilities: [gpu]
+                    driver: nvidia

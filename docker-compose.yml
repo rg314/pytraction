@@ -9,10 +9,3 @@ services:
         volumes: 
             - ./:/pytraction
         command: tail -f /dev/null
-        ipc: host
-        deploy:
-            resources:
-              reservations:
-                devices:
-                  - capabilities: [gpu]
-                    driver: nvidia

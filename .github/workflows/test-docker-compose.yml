@@ -1,4 +1,4 @@
-name: docker-compose-actions-workflow
+name: docker-compose workflow
 on: push
 jobs:
   test:
@@ -6,6 +6,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack
-        run: docker-compose -f docker-compose.cpu.yml up -d
+        run: docker-compose -f docker-compose.yml up -d
 #       - name: Test
 #         run: docker run --network container:webapp-frontend appropriate/curl -s --retry 10 --retry-connrefused http://localhost:5000/
