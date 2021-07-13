@@ -8,7 +8,7 @@ from pytraction.utils import normalize, allign_slice, bead_density
 
 
 # get the images of interest
-def _get_reference_frame(ref_stack, frame, bead_channel):
+def _get_reference_frame(ref_stack, bead_channel):
     return normalize(np.array(ref_stack[bead_channel,:,:]))
 
 def _get_img_frame(img_stack, frame, bead_channel):

@@ -49,7 +49,7 @@ REQUIREMENTS = [
     'toml==0.10.2',
     'tqdm==4.59.0',
     'albumentations==0.5.2',
-    'segmentation_models_pytorch==0.1.3',
+    'segmentation_models_pytorch==0.2.0',
     'shapely==1.7.1',
     'googledrivedownloader==0.4',
     'requests==2.25.1',
