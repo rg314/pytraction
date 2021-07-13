@@ -7,7 +7,6 @@
 </p>
 
 
-
 Bayesian Traction Force Microscopy
 
 **Motivation**: TFM data is annoying, disperse tool set (all in matlab / ImageJ / javascript)
@@ -18,12 +17,6 @@ Bayesian Traction Force Microscopy
 ## TO-DO
 
 :clock9: Tests for edge cases on input
-
-:clock9: Save to hdf5 rather than csv
-
-:clock9: Simple hdf5 usage
-
-:clock9: Write manuscript
 
 
 ## Colab examples
@@ -50,20 +43,6 @@ pip install notebook
 python -m ipykernel install --user --name=pytraction
 jupyter notebook scripts/usage.ipynb
 ```
-
-## Draft manuscript
-
-Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC) or [OneDrive link to folder](https://universityofcambridgecloud-my.sharepoint.com/:f:/g/personal/rdg31_cam_ac_uk/EldvnfWg5k1NsGt5L7bthSYBFdrhbKrX1aaTAoxSKeag9g). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
-
-The draft manuscript has only been sent to a few authors to date. Authors are listed alphabetically. Contributors will be invited to manuscript if a significant contribution is made which can consist of:
--	Significantly contributing to design or code of the core python package.
--	Demonstrating usage of core python package compared to other analysis techniques.
--	Demonstrating usage of core python package with computational techniques.
--	Fixing major bugs in core python package.
--	Contributed or provided experimental data for the manuscript.
-
-If you believe that you have made a significant contribution (and have not been invited to the manuscript) or would like to make a significant contribution please [contact me](https://github.com/rg314).
-
 
 ## Installation
 
@@ -151,6 +130,19 @@ plt.show()
 ```
 
 ![image](https://user-images.githubusercontent.com/35999546/111919773-962fdc80-8a83-11eb-9230-ec9e588a9b77.png)
+
+## Draft manuscript
+
+Please follow [OneDrive link to draft manuscript](https://universityofcambridgecloud-my.sharepoint.com/:w:/g/personal/rdg31_cam_ac_uk/Ed0Z-nD1hrhMuCujn5yhrdoBu4-VcEIdpUdaSLyZo4KLTA?e=IYqPJC) or [OneDrive link to folder](https://universityofcambridgecloud-my.sharepoint.com/:f:/g/personal/rdg31_cam_ac_uk/EldvnfWg5k1NsGt5L7bthSYBFdrhbKrX1aaTAoxSKeag9g). I've chosen OneDrive as it nicely integrates with EndNote and multiple users editing at once.
+
+The draft manuscript has only been sent to a few authors to date. Authors are listed alphabetically. Contributors will be invited to manuscript if a significant contribution is made which can consist of:
+-	Significantly contributing to design or code of the core python package.
+-	Demonstrating usage of core python package compared to other analysis techniques.
+-	Demonstrating usage of core python package with computational techniques.
+-	Fixing major bugs in core python package.
+-	Contributed or provided experimental data for the manuscript.
+
+If you believe that you have made a significant contribution (and have not been invited to the manuscript) or would like to make a significant contribution please [contact me](https://github.com/rg314).
 
 
 ### Contributing
