@@ -9,6 +9,7 @@ data2/*
 examples/data/*
 examples/pytraction/*
 *.h5
+!tests/data/*
 
 
 # Byte-compiled / optimized / DLL files

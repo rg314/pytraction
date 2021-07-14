@@ -90,6 +90,8 @@ def test__custom_noise():
     assert beta == 3.9170344130375994
     assert cache[tmppath] == beta
 
-    # remove the cache for new test
-    os.remove(destination)
 
+
+def test__find_uv_outside_single_polygon():
+    pass
+    # _find_uv_outside_single_polygon

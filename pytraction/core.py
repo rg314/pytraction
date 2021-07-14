@@ -2,15 +2,11 @@ import os
 import io
 import h5py
 import pickle
-import zipfile 
 import tempfile
-from read_roi import read_roi_file
 
 import tifffile
 import numpy as np
-import pandas as pd
 from shapely import geometry
-import functools
 
 import torch
 import segmentation_models_pytorch as smp
@@ -22,6 +18,7 @@ from pytraction.process import calculate_traction_map, iterative_piv
 from pytraction.net.dataloader import get_preprocessing
 from pytraction.dataset import Dataset
 from pytraction.utils import normalize
+from pytraction.roi import roi_loaders
 
 
 class TractionForceConfig(object):
@@ -122,54 +119,6 @@ class TractionForceConfig(object):
         return knn
 
 
-
-    def _recursive_lookup(self, k, d):
-        if k in d: return d[k]
-        for v in d.values():
-            if isinstance(v, dict):
-                a = self._recursive_lookup(k, v)
-                if a is not None: return a
-        return None
-
-
-    @staticmethod
-    def _load_csv_roi(roi_path):
-        x, y = pd.read_csv(roi_path).T.values
-        return (x,y)
-
-    def _load_roireader_roi(self, roi_path):
-        d = read_roi_file(roi_path)
-        x = self._recursive_lookup('x', d)
-        y = self._recursive_lookup('y', d)
-
-        return (x,y)
-
-    def _load_zip_roi(self, roi_path):
-        rois = []
-        with zipfile.ZipFile(roi_path) as ziproi:
-            for file in ziproi.namelist():
-                roi_path_file = ziproi.extract(file)
-                d = read_roi_file(roi_path_file)
-                x = self._recursive_lookup('x', d)
-                y = self._recursive_lookup('y', d)
-                rois.append((x,y))
-                os.remove(roi_path_file)
-        return rois
-
-    def _roi_loaders(self, roi_path):
-        if '.csv' in roi_path:
-            return self._load_csv_roi(roi_path)
-
-        elif '.roi' in roi_path:
-            return self._load_roireader_roi(roi_path)
-
-        elif '.zip' in roi_path:
-            return self._load_zip_roi(roi_path)
-
-        else:
-            return None
-
-
     def load_data(self, img_path, ref_path, roi_path=''):
         """
         :param img_path: Image path for to nd image with shape (f,c,w,h)
@@ -178,7 +127,7 @@ class TractionForceConfig(object):
         """
         img = tifffile.imread(img_path)
         ref = tifffile.imread(ref_path)
-        roi = self._roi_loaders(roi_path)
+        roi = roi_loaders(roi_path)
 
 
         if not isinstance(img,np.ndarray) or not isinstance(ref, np.ndarray):
@@ -194,6 +143,8 @@ class TractionForceConfig(object):
             raise RuntimeWarning(msg)
 
         return img, ref, roi
+
+
 
 def _find_uv_outside_single_polygon(x,y,u,v, polygon):
     noise = []
