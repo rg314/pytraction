@@ -4,6 +4,7 @@ from typing import Tuple, Type
 import h5py
 import pickle
 import tempfile
+from numpy.lib.npyio import load
 
 import tifffile
 import numpy as np
@@ -12,6 +13,7 @@ from shapely import geometry
 import torch
 import segmentation_models_pytorch as smp
 from google_drive_downloader import GoogleDriveDownloader as gdd
+import yaml
 
 
 from pytraction.preprocess import _get_raw_frames, _get_min_window_size, _get_polygon_and_roi, _create_crop_mask_targets, _load_frame_roi
@@ -24,56 +26,38 @@ from pytraction.roi import roi_loaders
 
 class TractionForceConfig(object):
 
-    def __init__(self, scaling_factor, E, min_window_size=None, dt=1, s=0.5, meshsize=10, device='cpu', segment=False, config=None):
-        self.device = device
-        self.model, self.pre_fn = self._get_cnn_model(device)
-        self.knn = self._get_knn_model()
+    def __init__(
+        self, 
+        E:float, 
+        scaling_factor:float, 
+        config:str, 
+        min_window_size:int=None, 
+        meshsize:int=10, 
+        s:float=0.5, 
+        knn:bool=True,
+        cnn:bool=True,
+    ):
 
-        if not config:
-            self.config = self._get_config(min_window_size, dt, E, s, meshsize, scaling_factor, segment)
-        else:
-            self.config = self._config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor)
+        self.config = self._config_yaml(config, E, min_window_size, s, meshsize, scaling_factor)
+
+        
+        self.knn = self._get_knn_model() if knn else None
+        self.model, self.pre_fn = self._get_cnn_model(device=self.config['settings']['device']) if cnn else (None, None)
 
 
     def __repr__():
         pass
 
     @staticmethod
-    def _get_config(min_window_size, dt, E, s, meshsize, scaling_factor, segment):
-        config = {
-                'piv':{
-                    'min_window_size':min_window_size, 
-                    'overlap_ratio':0.5, 
-                    'coarse_factor':0, 
-                    'dt':dt, 
-                    'validation_method':'mean_velocity', 
-                    'trust_1st_iter':0, 
-                    'validation_iter':3, 
-                    'tolerance':1.5, 
-                    'nb_iter_max':1, 
-                    'sig2noise_method':'peak2peak',
-                    },
-                'tfm': {
-                    'E':E,
-                    's':s,
-                    'meshsize':meshsize,
-                    'pix_per_mu':scaling_factor
-                        },
-
-                'settings': {
-                    'segment':segment
-                        },
-                    }
-        return config
-
-    @staticmethod
-    def _config_ymal(config, min_window_size, dt, E, s, meshsize, scaling_factor):
+    def _config_yaml(config, E, min_window_size, s, meshsize, scaling_factor):
+        with open(config, 'r') as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+        
         config['tfm']['E'] = E,
         config['tfm']['pix_per_mu'] = scaling_factor
-        config['tfm']['meshsize'] = meshsize
-        config['tfm']['s'] = s
-        # config['piv']['min_window_size'] = min_window_size
-        config['piv']['dt'] = dt
+        config['piv']['min_window_size'] = min_window_size if min_window_size is not None else config['piv']['min_window_size']
+        config['tfm']['s'] = s if s is not None else config['tfm']['s']
+        config['tfm']['meshsize'] = meshsize if meshsize is not None else config['tfm']['meshsize']
         return config
 
 

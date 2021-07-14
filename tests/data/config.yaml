@@ -12,10 +12,10 @@ piv:
   sig2noise_method: peak2peak
 
 tfm: 
-  E: null
-  s: null
-  meshsize: null
-  pix_per_mu: null
+  E: None
+  s: None
+  meshsize: None
+  pix_per_mu: None
 
 settings:
   bead_channel: 0

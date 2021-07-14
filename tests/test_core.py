@@ -15,6 +15,40 @@ import pickle
 import numpy as np
 from shapely.geometry import Polygon
 
+
+def test_TractionForceConfig_test_models():
+    E = 100
+    scaling_factor = 1.3
+    
+    config_file = os.path.join('tests','data','config.yaml')
+
+    tf_config = TractionForceConfig(E=E, scaling_factor=scaling_factor, config=config_file, knn=False, cnn=False)
+
+    assert tf_config.model == None
+    assert tf_config.pre_fn == None
+    assert tf_config.knn == None
+
+
+    tf_config = TractionForceConfig(E=E, scaling_factor=scaling_factor, config=config_file, knn=False, cnn=True)
+    assert hasattr(tf_config.model, 'predict')
+    assert tf_config.pre_fn != None
+    assert tf_config.knn == None
+
+    tf_config = TractionForceConfig(E=E, scaling_factor=scaling_factor, config=config_file, knn=True, cnn=False)
+    assert tf_config.model == None
+    assert tf_config.pre_fn == None    
+    assert hasattr(tf_config.knn, 'predict')
+
+
+    tf_config = TractionForceConfig(E=E, scaling_factor=scaling_factor, config=config_file, knn=True, cnn=True)
+    assert hasattr(tf_config.model, 'predict')
+    assert tf_config.pre_fn != None
+    assert hasattr(tf_config.knn, 'predict')
+
+
+
+
+
 def test__custom_noise():
     # dummy config
     class Config():
@@ -86,9 +120,4 @@ def test__find_uv_outside_single_polygon():
 
     assert (pts_test==pts).all()
 
-
-    _find_uv_outside_single_polygon(np.ndarray(1), np.ndarray(1), u, v, polygon)
-
-
-
-test__find_uv_outside_single_polygon()
+test_TractionForceConfig_test_models()
