@@ -55,6 +55,9 @@ def roi_loaders(roi_path):
     elif '.zip' in roi_path:
         return _load_zip_roi(roi_path)
 
+    elif '' == roi_path:
+        return None
+        
     else:
         msg = "roi loader expecting '.csv', '.roi', or '.zip'"
         raise NotImplementedError(msg)
