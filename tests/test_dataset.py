@@ -45,8 +45,3 @@ def test_Dataset_save():
     assert dataset.save('test.h5') == True
 
 
-
-
-test_Dataset_load()
-test_Dataset_metadata()
-test_Dataset_save()

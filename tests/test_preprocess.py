@@ -33,10 +33,10 @@ def test_get_reference_frame():
     ref_stack4 = np.ones((4,500,500))
     bead_channel4 = 3
 
-    ref1 = _get_reference_frame(ref_stack1, bead_channel1)
-    ref2 = _get_reference_frame(ref_stack2, bead_channel2)
-    ref3 = _get_reference_frame(ref_stack3, bead_channel2)
-    ref4 = _get_reference_frame(ref_stack4, bead_channel2)
+    ref1 = _get_reference_frame(ref_stack1, None, bead_channel1)
+    ref2 = _get_reference_frame(ref_stack2, None, bead_channel2)
+    ref3 = _get_reference_frame(ref_stack3, None, bead_channel2)
+    ref4 = _get_reference_frame(ref_stack4, None, bead_channel2)
 
     assert ref1.shape == (500,500)
     assert ref2.shape == (500,500)
