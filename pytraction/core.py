@@ -6,7 +6,7 @@ import zipfile
 import tempfile
 from read_roi import read_roi_file
 
-import skimage
+import tifffile
 import numpy as np
 import pandas as pd
 from shapely import geometry
@@ -176,8 +176,8 @@ class TractionForceConfig(object):
         :param ref_path: Reference path for to nd image with shape (c,w,h)
         :param roi_path: 
         """
-        img = skimage.io.imread(img_path)
-        ref = skimage.io.imread(ref_path)
+        img = tifffile.imread(img_path)
+        ref = tifffile.imread(ref_path)
         roi = self._roi_loaders(roi_path)
 
 
@@ -204,7 +204,16 @@ def _find_uv_outside_single_polygon(x,y,u,v, polygon):
     return np.array(noise)
 
 
-def _custom_noise(tiff_stack, config):
+def _custom_noise(tiff_stack:np.ndarray, config:dict) -> float:
+    """Returns the value for beta of custom noise provided as a tiff stack.
+
+    Args:
+        tiff_stack (np.ndarray): tiff stack with shape (t,w,h)
+        config (dict): Configuration ymal / dict file as provided in the git repo
+
+    Returns:
+        float: beta which is 1/var(u,v)
+    """
 
     tmpdir = tempfile.gettempdir()
     destination = f'{tmpdir}/tmp_noise.pickle'
@@ -218,9 +227,10 @@ def _custom_noise(tiff_stack, config):
         if beta:
             return beta
 
-    tiff_noise_stack = skimage.io.imread(tiff_stack)
+    tiff_noise_stack = tifffile.imread(tiff_stack)
     un, vn = np.array([]), np.array([])
-    for i in range(tiff_noise_stack.shape[0]-3):
+    max_range = max(tiff_noise_stack.shape[0]-1, 3-1)
+    for i in range(max_range):
         img = normalize(tiff_noise_stack[i,:,:])
         ref = normalize(tiff_noise_stack[i+1,:,:])
         x, y, u, v, stack = iterative_piv(img, ref, config)

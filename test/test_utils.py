@@ -8,10 +8,8 @@ from pytraction.utils import (
     plot,
     )
 
-from sklearn.datasets import make_blobs
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
-import matplotlib.pyplot as plt
 
 def test_allign_slice():
     
