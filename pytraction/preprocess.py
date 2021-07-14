@@ -4,7 +4,7 @@ from shapely import geometry
 from scipy.spatial import distance
 
 from pytraction.net import segment as pynet
-from pytraction.utils import normalize, allign_slice, bead_density
+from pytraction.utils import normalize, align_slice, bead_density
 
 
 # get the images of interest

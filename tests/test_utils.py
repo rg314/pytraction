@@ -1,5 +1,5 @@
 from pytraction.utils import (
-    allign_slice,
+    align_slice,
     sparse_cholesky,
     interp_vec2grid, 
     normalize,
@@ -10,8 +10,9 @@ from pytraction.utils import (
 
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
+import cv2 
 
-def test_allign_slice():
+def test_align_slice():
     
     # generate 300 particles
     x = np.random.randint(10, 246, 300)
@@ -57,14 +58,12 @@ def test_allign_slice():
         ref_target = img[pad:-pad, pad:-pad]
         img_target = img[pad+dy0:-pad+dy0, pad+dx0:-pad+dx0]
         # note that dx and dy are a measure of how much the target image has drifted from the refernece
-        dx, dy, alligned_img = allign_slice(img_target, ref_target)
+        dx, dy, aligned_img = align_slice(img_target, ref_target)
 
-        assert dx0 == dx, f'{k} shift did not allign correctly'
-        assert dy0 == dy, f'{k} shift did not allign correctly'
-
+        assert dx0 == dx, f'{k} shift did not align correctly'
+        assert dy0 == dy, f'{k} shift did not align correctly'
 
 def test_normalize():
-
     targets = {
         'img_float':np.random.rand(512*512).reshape((512,512)),
         'img_below_255':np.random.randint(0, 255, 512*512).reshape((512,512)),

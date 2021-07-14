@@ -16,7 +16,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing import Tuple, Type
 
 
-def allign_slice(img: np.ndarray, ref: np.ndarray) -> Tuple[int, int, np.ndarray]:
+def align_slice(img: np.ndarray, ref: np.ndarray) -> Tuple[int, int, np.ndarray]:
     """Given a bead image and a ref image compute the drift using cv2.matchTemplate
     and return the drift corrected image along with the x drift (dx) and y drift (dy).
     The dx, dy shift is a measure of how much the image has moved with respect to the reference.
@@ -144,6 +144,16 @@ def bead_density(img: np.ndarray) -> float:
     area_beads = ones/area
     
     return area_beads
+
+def remove_boarder_from_aligned(aligned_img):
+    _,thresh = cv2.threshold(aligned_img,0,255,cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
+    res = cv2.morphologyEx(thresh,cv2.MORPH_CLOSE,kernel)
+    contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    cnt = sorted(contours, key=lambda x: cv2.contourArea(x))[0]
+    x, y, w, h = cv2.boundingRect(cnt)
+    return aligned_img[y:y+h, x:x+h]
+
 
 
 def plot(log:Type[Dataset], frame:int=0, vmax:float=None, mask:bool=True, figsize:tuple=(16,16)) -> Tuple[mpl.figure.Figure,mpl.axes.Axes]:
