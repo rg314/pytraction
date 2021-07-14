@@ -55,6 +55,7 @@ REQUIREMENTS = [
     'requests==2.25.1',
     'scikit-learn==0.24.1',
     'h5py==3.2.1',
+    'PyYAML==5.4.1',
 ]
 
 

@@ -155,7 +155,6 @@ def remove_boarder_from_aligned(aligned_img):
     return aligned_img[y:y+h, x:x+h]
 
 
-
 def plot(log:Type[Dataset], frame:int=0, vmax:float=None, mask:bool=True, figsize:tuple=(16,16)) -> Tuple[mpl.figure.Figure,mpl.axes.Axes]:
     """[summary]
 

@@ -10,6 +10,7 @@ examples/data/*
 examples/pytraction/*
 *.h5
 !tests/data/*
+.bash_history/
 
 
 # Byte-compiled / optimized / DLL files
