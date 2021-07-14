@@ -45,6 +45,7 @@ REQUIREMENTS = [
     'scipy==1.6.1',
     'Shapely==1.7.1',
     'smmap==3.0.5',
+    'tifffile==2021.3.5',
     'toml==0.10.2',
     'tqdm==4.59.0',
     'albumentations==0.5.2',
