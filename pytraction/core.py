@@ -26,17 +26,7 @@ from pytraction.roi import roi_loaders
 
 class TractionForceConfig(object):
 
-    def __init__(
-        self, 
-        E:float, 
-        scaling_factor:float, 
-        config:str, 
-        min_window_size:int=None, 
-        meshsize:int=10, 
-        s:float=0.5, 
-        knn:bool=True,
-        cnn:bool=True,
-    ):
+    def __init__(self, E:float, scaling_factor:float, config:str, min_window_size=None, meshsize=10, s=0.5, knn=True, cnn=True):
 
         self.config = self._config_yaml(config, E, min_window_size, s, meshsize, scaling_factor)
 
