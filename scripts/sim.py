@@ -20,8 +20,6 @@ x = np.array([200, 200, 1024-200, 1024-200])
 y = np.array([1024-200, 200, 1024-200, 200])
 
 
-
-
 log = process_stack(img, ref, traction_config, roi=(x,y))
 
 for frame in range(len(log)):

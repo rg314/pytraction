@@ -1,8 +1,8 @@
 from pytraction import TractionForceConfig, process_stack
 
 import os
-from skimage import io
 import numpy as np
+from skimage import io
 
 
 def test_example1():
