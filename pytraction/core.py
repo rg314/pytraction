@@ -26,13 +26,17 @@ from pytraction.roi import roi_loaders
 
 class TractionForceConfig(object):
 
-    def __init__(self, E:float, scaling_factor:float, config:str, min_window_size=None, meshsize=10, s=0.5, knn=True, cnn=True):
+    def __init__(self, E:float, scaling_factor:float, config:str, min_window_size=None, meshsize=10, s=0.5, knn=True, cnn=True, **kwards):
 
         self.config = self._config_yaml(config, E, min_window_size, s, meshsize, scaling_factor)
 
         
         self.knn = self._get_knn_model() if knn else None
         self.model, self.pre_fn = self._get_cnn_model(device=self.config['settings']['device']) if cnn else (None, None)
+
+
+        for k, v in kwards:
+            self.config[k] = v
 
 
     def __repr__():

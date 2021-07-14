@@ -1,6 +1,6 @@
 from pytraction import TractionForceConfig, process_stack
-import os
 
+import os
 
 
 def test_example1():

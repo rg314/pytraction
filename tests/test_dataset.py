@@ -85,7 +85,3 @@ def test_Dataset_str():
 
     assert isinstance(dataset.__str__(), str)
     assert isinstance(dataset.__repr__(), str)
-
-test_Dataset_str()
-test_Dataset_metadata()
-test_Dataset_load()

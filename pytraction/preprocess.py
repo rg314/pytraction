@@ -50,7 +50,7 @@ def _load_frame_roi(roi, frame, nframes):
 
 # get roi
 def _cnn_segment_cell(cell_img, config):
-    mask = pynet.get_mask(cell_img, config.model, config.pre_fn, device=config.device)
+    mask = pynet.get_mask(cell_img, config.model, config.pre_fn, device=config.config['settings']['device'])
     return np.array(mask.astype('bool'), dtype='uint8')
 
 
