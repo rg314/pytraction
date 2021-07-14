@@ -1,5 +1,6 @@
 import os
 import io
+from typing import Tuple, Type
 import h5py
 import pickle
 import tempfile
@@ -119,11 +120,21 @@ class TractionForceConfig(object):
         return knn
 
 
-    def load_data(self, img_path, ref_path, roi_path=''):
-        """
-        :param img_path: Image path for to nd image with shape (f,c,w,h)
-        :param ref_path: Reference path for to nd image with shape (c,w,h)
-        :param roi_path: 
+    def load_data(self, img_path:str, ref_path:str, roi_path:str='')-> Tuple[np.ndarray, np.ndarray, list]:
+        """[summary]
+
+        Args:
+            img_path (str): Image path for to nd image with shape (f,c,w,h)
+            ref_path (str): Reference path for to nd image with shape (c,w,h)
+            roi_path (str, optional): [description]. Defaults to ''.
+
+        Raises:
+            TypeError: Image data not loaded for img or ref path. Use .tif as ext'
+            RuntimeWarning: Please ensure that the input image has shape (t,c,w,h)
+            RuntimeWarning: Please ensure that the input ref image has shape (c,w,h)
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray, list]: [description]
         """
         img = tifffile.imread(img_path)
         ref = tifffile.imread(ref_path)
@@ -139,14 +150,26 @@ class TractionForceConfig(object):
             raise RuntimeWarning(msg)
         
         if len(ref.shape) != 3:
-            msg = f'Please ensure that the input image has shape (c,w,h) the current shape is {ref.shape}'
+            msg = f'Please ensure that the input ref image has shape (c,w,h) the current shape is {ref.shape}'
             raise RuntimeWarning(msg)
 
         return img, ref, roi
 
 
 
-def _find_uv_outside_single_polygon(x,y,u,v, polygon):
+def _find_uv_outside_single_polygon(x:np.ndarray,y:np.ndarray,u:np.ndarray,v:np.ndarray, polygon:Type[geometry.Polygon]) -> np.ndarray:
+    """Find the u and v components outside the ROI polygon. 
+
+    Args:
+        x (np.ndarray): x-component
+        y (np.ndarray): y-component
+        u (np.ndarray): u-component
+        v (np.ndarray): v-component
+        polygon (Type[geometry.Polygon]): shapely polygon to test which (xi, yi) is within
+
+    Returns:
+        np.ndarray: (un, vn) array with noisy u and v components
+    """
     noise = []
     for (x0,y0, u0, v0) in zip(x.flatten(),y.flatten(), u.flatten(), v.flatten()):        
         p1 = geometry.Point([x0,y0])
@@ -155,12 +178,12 @@ def _find_uv_outside_single_polygon(x,y,u,v, polygon):
     return np.array(noise)
 
 
-def _custom_noise(tiff_stack:np.ndarray, config:dict) -> float:
+def _custom_noise(tiff_stack:np.ndarray, config:Type[TractionForceConfig]) -> float:
     """Returns the value for beta of custom noise provided as a tiff stack.
 
     Args:
         tiff_stack (np.ndarray): tiff stack with shape (t,w,h)
-        config (dict): Configuration ymal / dict file as provided in the git repo
+        config (Type[TractionForceConfig]): Configuration for traction object.
 
     Returns:
         float: beta which is 1/var(u,v)

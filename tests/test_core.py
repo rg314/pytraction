@@ -1,3 +1,4 @@
+from scipy.ndimage.measurements import label
 from pytraction.core import (
     TractionForceConfig,
     _find_uv_outside_single_polygon,
@@ -8,13 +9,11 @@ from pytraction.core import (
     process_stack,
 )
 
-import numpy as np
-# from skimage import io
-import tifffile
-import tempfile
 import os
-from scipy.ndimage.filters import gaussian_filter
+import tempfile
 import pickle
+import numpy as np
+from shapely.geometry import Polygon
 
 def test__custom_noise():
     # dummy config
@@ -41,7 +40,6 @@ def test__custom_noise():
     with open(destination, 'rb') as f:
         cache = pickle.load(f)
 
-
     assert os.path.exists(tmppath)
     assert os.path.exists(destination)
     assert beta == 4.010723998246769
@@ -51,8 +49,46 @@ def test__custom_noise():
 
     
 def test__find_uv_outside_single_polygon():
-    pass
-    # _find_uv_outside_single_polygon
+
+    # function to create circle with radius at center (x,y)
+    def create_circle(radius, center=(10,10)):
+        theta = np.linspace(0, 2*np.pi, 30)
+        x = radius*np.cos(theta) + center[0]
+        y = radius*np.sin(theta) + center[1]
+        return x, y
+
+    
+    # create 3 three consentic circles with increasing radii
+    inner_x, inner_y = create_circle(2)
+    polygon_x, polygon_y = create_circle(4)
+    outer_x, outer_y = create_circle(6)
+
+    # create a polygon with middle circle
+    polygon = Polygon(list(zip(polygon_x, polygon_y)))
+
+    # create random u and v vectors
+    u_inner = np.random.randint(0,100,size=30)
+    u_outer = u_inner + 10
+    v_inner = np.random.randint(0,100,size=30)
+    v_outer = v_inner + 10
+
+    # join inner and outer circle (x,y,u,v)
+    x = np.concatenate([inner_x, outer_x])
+    y = np.concatenate([inner_y, outer_y])
+    u = np.concatenate([u_inner, u_outer])
+    v = np.concatenate([v_inner, v_outer])
+
+    # test function
+    pts = _find_uv_outside_single_polygon(x, y, u, v, polygon)
+
+    # get the known input
+    pts_test = np.array([u_outer, v_outer]).T
+
+    assert (pts_test==pts).all()
 
 
-test__custom_noise()
+    _find_uv_outside_single_polygon(np.ndarray(1), np.ndarray(1), u, v, polygon)
+
+
+
+test__find_uv_outside_single_polygon()
