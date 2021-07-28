@@ -11,7 +11,8 @@ examples/pytraction/*
 *.h5
 !tests/data/*
 .bash_history/
-
+.ssh/*
+.vscode-server/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
