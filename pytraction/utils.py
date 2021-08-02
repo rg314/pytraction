@@ -145,14 +145,13 @@ def bead_density(img: np.ndarray) -> float:
     
     return area_beads
 
-def remove_boarder_from_aligned(aligned_img):
+def remove_boarder_from_aligned(aligned_img, aligned_ref):
     _,thresh = cv2.threshold(aligned_img,0,255,cv2.THRESH_BINARY)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,9))
-    res = cv2.morphologyEx(thresh,cv2.MORPH_CLOSE,kernel)
-    contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     cnt = sorted(contours, key=lambda x: cv2.contourArea(x))[0]
     x, y, w, h = cv2.boundingRect(cnt)
-    return aligned_img[y:y+h, x:x+h]
+    return aligned_img[y:y+h, x:x+w], aligned_ref[y:y+h, x:x+w]
 
 
 def plot(log:Type[Dataset], frame:int=0, vmax:float=None, mask:bool=True, figsize:tuple=(16,16)) -> Tuple[mpl.figure.Figure,mpl.axes.Axes]:

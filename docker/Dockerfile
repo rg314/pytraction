@@ -8,8 +8,9 @@ RUN mkdir pytraction
 WORKDIR /pytraction
 ENV HOME /pytraction
 
-RUN git clone https://github.com/rg314/pytraction.git
-RUN pip install pytraction/
+# check on release
+# RUN git clone https://github.com/rg314/pytraction.git
+# RUN pip install pytraction/
 
 
 USER root
