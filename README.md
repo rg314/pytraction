@@ -18,6 +18,8 @@ Bayesian Traction Force Microscopy
 
 :clock9: Tests for edge cases on input
 
+:clock9: Simulation validation
+
 
 ## Colab examples
 Please try running the following notebooks on google colab. You will need to generate a [personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
