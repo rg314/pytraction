@@ -17,6 +17,7 @@ Bayesian Traction Force Microscopy
 ## TO-DO
 
 :clock9: Tests for edge cases on input
+:clock9: Simulation validation
 
 
 ## Colab examples
