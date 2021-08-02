@@ -238,7 +238,17 @@ def _write_metadata_results(results, config):
         results['metadata'].attrs[k] = np.void(str(v).encode())
     return results
 
-def process_stack(img_stack, ref_stack, config, bead_channel=0, cell_channel=1, roi=False, frame=[], crop=False, verbose=0, custom_noise=None):
+def process_stack(
+    img_stack, 
+    ref_stack, 
+    config, 
+    bead_channel=0, 
+    cell_channel=1, 
+    roi=False, 
+    frame=[], 
+    crop=False, 
+    custom_noise=None
+    ):
     nframes = img_stack.shape[0]
     
 

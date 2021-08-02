@@ -57,7 +57,7 @@ def test__custom_noise():
     
     # fix config / using dummy window size of 32
     config = Config()
-    config.config = {'piv': {'min_window_size': 32, 'overlap_ratio': 0.5, 'coarse_factor': 0, 'dt': 1, 'validation_method': 'mean_velocity', 'trust_1st_iter': 0, 'validation_iter': 3, 'tolerance': 1.5, 'nb_iter_max': 1, 'sig2noise_method': 'peak2peak'}, 'tfm': {'E': 'None', 's': 'None', 'meshsize': 'None', 'pix_per_mu': 'None'}, 'settings': {'bead_channel': 0, 'cell_channel': 1, 'segment': False, 'device': 'cpu'}}
+    config.config = {'piv': {'min_window_size': 32, 'overlap_ratio': 0.5, 'coarse_factor': 0, 'dt': 1, 'validation_method': 'mean_velocity', 'trust_1st_iter': 0, 'validation_iter': 3, 'tolerance': 1.5, 'nb_iter_max': 1, 'sig2noise_method': 'peak2peak'}, 'tfm': {'E': 'None', 's': 'None', 'meshsize': 'None', 'pix_per_mu': 'None'}, 'settings': {'bead_channel': 0, 'cell_channel': 1, 'segment': False, 'device': 'cpu', 'crop_aligned_slice':False}}
 
 
     tmppath = os.path.join('tests','data','stack.tiff')

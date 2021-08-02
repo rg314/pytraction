@@ -2,7 +2,7 @@ import numpy as np
 from openpiv import widim
 
 
-from pytraction.utils import align_slice
+from pytraction.utils import align_slice, remove_boarder_from_aligned
 from pytraction.fourier import fourier_xu, reg_fourier_tfm
 from pytraction.optimal_lambda import optimal_lambda
 
@@ -14,8 +14,14 @@ def iterative_piv(img, ref, config):
     # align stacks
     dx, dy, img = align_slice(img, ref)
 
+
+    if config.config['settings']['crop_aligned_slice']:
+        img, ref = remove_boarder_from_aligned(img, ref)
+
+    
     # return aligned stack
     stack = np.stack([img, ref])
+
 
     x,y,u,v, mask = compute_piv(img, ref, config)
 

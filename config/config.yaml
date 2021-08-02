@@ -22,5 +22,6 @@ settings:
   cell_channel: 1
   segment: False
   device: cpu
+  crop_aligned_slice: False
       
     
