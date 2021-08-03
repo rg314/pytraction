@@ -20,6 +20,8 @@ Bayesian Traction Force Microscopy
 
 :clock9: Simulation validation
 
+:clock9: Add clean docker image
+
 
 ## Colab examples
 Please try running the following notebooks on google colab. You will need to generate a [personal access token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
