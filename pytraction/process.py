@@ -1,12 +1,11 @@
 import numpy as np
 from openpiv import widim
 
-
-from pytraction.utils import align_slice, remove_boarder_from_aligned
 from pytraction.fourier import fourier_xu, reg_fourier_tfm
 from pytraction.optimal_lambda import optimal_lambda
+from pytraction.utils import align_slice, remove_boarder_from_aligned
 
-    
+
 def iterative_piv(img, ref, config):
     """
     DOCSTRING TO-DO
@@ -14,54 +13,63 @@ def iterative_piv(img, ref, config):
     # align stacks
     dx, dy, img = align_slice(img, ref)
 
-
-    if config.config['settings']['crop_aligned_slice']:
+    if config.config["settings"]["crop_aligned_slice"]:
         img, ref = remove_boarder_from_aligned(img, ref)
 
-    
     # return aligned stack
     stack = np.stack([img, ref])
 
-
-    x,y,u,v, mask = compute_piv(img, ref, config)
+    x, y, u, v, mask = compute_piv(img, ref, config)
 
     # fit angle vs mag to gaussian to filter
 
-    return x,y,u,v, (stack, dx, dy)
+    return x, y, u, v, (stack, dx, dy)
+
 
 def compute_piv(img, ref, config):
     try:
         # compute iterative PIV using openpiv
-        x,y,u,v, mask = widim.WiDIM(ref.astype(np.int32), 
-                                    img.astype(np.int32), 
-                                    np.ones_like(ref).astype(np.int32),
-                                    **config.config['piv'])
-        return x,y,u,v, mask
+        x, y, u, v, mask = widim.WiDIM(
+            ref.astype(np.int32),
+            img.astype(np.int32),
+            np.ones_like(ref).astype(np.int32),
+            **config.config["piv"],
+        )
+        return x, y, u, v, mask
     except Exception as e:
         if isinstance(e, ZeroDivisionError):
-            config.config['piv']['min_window_size'] = config.config['piv']['min_window_size']//2
-            print(f"Reduced min window size to {config.config['piv']['min_window_size']} in recursive call")
+            config.config["piv"]["min_window_size"] = (
+                config.config["piv"]["min_window_size"] // 2
+            )
+            print(
+                f"Reduced min window size to {config.config['piv']['min_window_size']} in recursive call"
+            )
             return compute_piv(img, ref, config)
         else:
             raise e
 
 
-def calculate_traction_map(pos, vec, beta, meshsize, s, pix_per_mu, E):         
-        
-    # fourier space
-    grid_mat, i_max, j_max, X, fuu, Ftux, Ftuy, u = fourier_xu(pos,vec, meshsize, 1, s,[])
+def calculate_traction_map(pos, vec, beta, meshsize, s, pix_per_mu, E):
 
-    # get lambda from baysian bad boi 
-    L, evidencep, evidence_one = optimal_lambda(beta, fuu, Ftux, Ftuy, 1, s, meshsize, i_max, j_max, X, 1)
+    # fourier space
+    grid_mat, i_max, j_max, X, fuu, Ftux, Ftuy, u = fourier_xu(
+        pos, vec, meshsize, 1, s, []
+    )
+
+    # get lambda from baysian bad boi
+    L, evidencep, evidence_one = optimal_lambda(
+        beta, fuu, Ftux, Ftuy, 1, s, meshsize, i_max, j_max, X, 1
+    )
 
     # do the TFM with bays lambda
-    pos,traction,traction_magnitude,f_n_m,_,_ = reg_fourier_tfm(Ftux, Ftuy, L, 1, s, meshsize, i_max, j_max, grid_mat, pix_per_mu, 0)
+    pos, traction, traction_magnitude, f_n_m, _, _ = reg_fourier_tfm(
+        Ftux, Ftuy, L, 1, s, meshsize, i_max, j_max, grid_mat, pix_per_mu, 0
+    )
 
-    #rescale traction with proper Young's modulus
-    traction = E*traction
-    traction_magnitude = E*traction_magnitude
-    f_n_m = E*f_n_m
-
+    # rescale traction with proper Young's modulus
+    traction = E * traction
+    traction_magnitude = E * traction_magnitude
+    f_n_m = E * f_n_m
 
     # off with the shapes flip back into positon
     traction_magnitude = traction_magnitude.reshape(i_max, j_max).T

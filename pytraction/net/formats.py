@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 
 
 class Loader:
@@ -8,43 +8,53 @@ class Loader:
     FOLDERS = None
     DATASET = None
 
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         self.img_file_names = []
         self.tmp_img_file_names = []
         self.mask_file_names = []
         self.data_path = data_path
-        self.gt_standard = gt_standard # Get ground truth standard
-        self.gt_type = gt_type # Get the ground truth type
+        self.gt_standard = gt_standard  # Get ground truth standard
+        self.gt_type = gt_type  # Get the ground truth type
         self.ext = ext
 
-        assert (self.gt_standard == 'GT' or self.gt_standard == 'ST'), f"Illegal ground truth standard '{self.gt_standard}' \
+        assert (
+            self.gt_standard == "GT" or self.gt_standard == "ST"
+        ), f"Illegal ground truth standard '{self.gt_standard}' \
             only 'GT' or 'ST' allowed"
 
     def _get_unique_folders(self):
         """get unique folders and for specific dataset"""
         if self.FOLDERS and self.DATASET:
             for folder in self.FOLDERS:
-                self.tmp_img_file_names += glob.glob(f"{self.data_path}/{self.DATASET}/{folder}/*.tif")
+                self.tmp_img_file_names += glob.glob(
+                    f"{self.data_path}/{self.DATASET}/{folder}/*.tif"
+                )
                 if not self.tmp_img_file_names:
                     return False
-            
+
             self.tmp_img_file_names = sorted(self.tmp_img_file_names)
             # modify each image path for mask path and check if exists. If not pop current index to clean any missing data
             for idx, imgname in enumerate(self.tmp_img_file_names):
                 path, basename = os.path.split(imgname)
-                nametype = 'man_track' if self.gt_type == 'TRA' else 'man_seg'
-                if self.ext != '.tif':
-                    basename = basename[1:].replace('.tif', f'{self.ext}')
+                nametype = "man_track" if self.gt_type == "TRA" else "man_seg"
+                if self.ext != ".tif":
+                    basename = basename[1:].replace(".tif", f"{self.ext}")
                 else:
                     basename = basename[1:]
-                target = f"{path}_{self.gt_standard}/{self.gt_type}/{nametype}{basename}"
+                target = (
+                    f"{path}_{self.gt_standard}/{self.gt_type}/{nametype}{basename}"
+                )
                 if os.path.exists(imgname) and os.path.exists(target):
                     self.mask_file_names += [target]
                     self.img_file_names += [imgname]
-                
+
             # check img and mask files are the same length
-            assert len(self.img_file_names) == len(self.mask_file_names), 'Image files do not match the number of mask files'
-            assert len(self.img_file_names) != 0, f'Warning no files loaded. Check gt_type {self.gt_type}, and file extension. Using {self.ext}'
+            assert len(self.img_file_names) == len(
+                self.mask_file_names
+            ), "Image files do not match the number of mask files"
+            assert (
+                len(self.img_file_names) != 0
+            ), f"Warning no files loaded. Check gt_type {self.gt_type}, and file extension. Using {self.ext}"
             return True
         else:
             return False
@@ -52,7 +62,8 @@ class Loader:
     def return_img_mask_files(self):
         """retrun image and mask files for dataset"""
         return self.img_file_names, self.mask_file_names
-        
+
+
 class Loader_BFC2DLHSC(Loader):
     """
     Mouse hematopoietic stem cells in hydrogel microwells
@@ -71,18 +82,19 @@ class Loader_BFC2DLHSC(Loader):
     Pixel size (microns): 0.645 x 0.645
 
     Time step (min): 5
-    
+
     """
-    FOLDERS = ['01', '02']
-    DATASET = 'BF-C2DL-HSC'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+
+    FOLDERS = ["01", "02"]
+    DATASET = "BF-C2DL-HSC"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
+        assert load, f"Warning no images found check {data_path}"
 
-   
+
 class Loader_BFC2DLMuSC(Loader):
     """
     Mouse muscle stem cells in hydrogel microwells
@@ -102,14 +114,16 @@ class Loader_BFC2DLMuSC(Loader):
 
     Time step (min): 5
     """
-    FOLDERS = ['01', '02']
-    DATASET = 'BF-C2DL-MuSC'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+
+    FOLDERS = ["01", "02"]
+    DATASET = "BF-C2DL-MuSC"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
+        assert load, f"Warning no images found check {data_path}"
+
 
 class Loader_DICC2DHHeLa(Loader):
     """
@@ -129,17 +143,17 @@ class Loader_DICC2DHHeLa(Loader):
     Pixel size (microns): 0.19 x 0.19
 
     Time step (min): 10
-    
+
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'DIC-C2DH-HeLa'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "DIC-C2DH-HeLa"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
+        assert load, f"Warning no images found check {data_path}"
 
 
 class Loader_FluoC2DLHuh7(Loader):
@@ -164,16 +178,16 @@ class Loader_FluoC2DLHuh7(Loader):
     Additional information: Cell Host & Microbe, 2012
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-C2DL-Huh7'
-    STANDARD = ['GT']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-C2DL-Huh7"
+    STANDARD = ["GT"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-     
-        
+        assert load, f"Warning no images found check {data_path}"
+
+
 class Loader_FluoC2DLMSC(Loader):
 
     """
@@ -195,15 +209,14 @@ class Loader_FluoC2DLMSC(Loader):
     Time step (min): 20 (30)
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-C2DL-MSC'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-C2DL-MSC"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
 
 
 class Loader_FluoN2DHGOWT1(Loader):
@@ -230,15 +243,16 @@ class Loader_FluoN2DHGOWT1(Loader):
 
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-N2DH-GOWT1'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-N2DH-GOWT1"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
+
+
 class Loader_FluoN2DHGOWT1(Loader):
 
     """
@@ -263,15 +277,15 @@ class Loader_FluoN2DHGOWT1(Loader):
 
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-N2DH-GOWT1'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-N2DH-GOWT1"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
+
 
 class Loader_FluoN2DLHeLa(Loader):
     """
@@ -295,15 +309,16 @@ class Loader_FluoN2DLHeLa(Loader):
     Additional information: Nature, 2010
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-N2DL-HeLa'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-N2DL-HeLa"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
+
+
 class Loader_PhCC2DHU373(Loader):
 
     """
@@ -325,15 +340,15 @@ class Loader_PhCC2DHU373(Loader):
     Time step (min): 15
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'PhC-C2DH-U373'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "PhC-C2DH-U373"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
+
 
 class Loader_PhCC2DLPSC(Loader):
     """
@@ -357,15 +372,16 @@ class Loader_PhCC2DLPSC(Loader):
     Additional information: PLoS ONE, 2011
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'PhC-C2DL-PSC'
-    STANDARD = ['GT', 'ST']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "PhC-C2DL-PSC"
+    STANDARD = ["GT", "ST"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
+
+
 class Loader_FluoN2DHSIM(Loader):
     """
     Simulated nuclei of HL60 cells stained with Hoescht
@@ -390,29 +406,25 @@ class Loader_FluoN2DHSIM(Loader):
     Additional information: IEEE Transactions on Medical Imaging, 2016
     """
 
-    FOLDERS = ['01', '02']
-    DATASET = 'Fluo-N2DH-SIM'
-    STANDARD = ['GT']
-    
-    def __init__(self, data_path, gt_standard, gt_type, ext='.tif'):
+    FOLDERS = ["01", "02"]
+    DATASET = "Fluo-N2DH-SIM"
+    STANDARD = ["GT"]
+
+    def __init__(self, data_path, gt_standard, gt_type, ext=".tif"):
         Loader.__init__(self, data_path, gt_standard, gt_type, ext)
         load = self._get_unique_folders()
-        assert load, f'Warning no images found check {data_path}'
-        
+        assert load, f"Warning no images found check {data_path}"
 
 
 DATASETS = {
-        'BF-C2DL-HSC': Loader_BFC2DLHSC, 
-        'BF-C2DL-MuSC':Loader_BFC2DLMuSC, 
-        'DIC-C2DH-HeLa':Loader_DICC2DHHeLa, 
-        'Fluo-C2DL-Huh7':Loader_FluoC2DLHuh7, 
-        'Fluo-C2DL-MSC':Loader_FluoC2DLMSC, 
-        'Fluo-N2DH-GOWT1':Loader_FluoN2DHGOWT1,
-        'Fluo-N2DL-HeLa': Loader_FluoN2DLHeLa,
-        'PhC-C2DH-U373': Loader_PhCC2DHU373,
-        'PhC-C2DL-PSC': Loader_PhCC2DLPSC,
-        'Fluo-N2DH-SIM': Loader_FluoN2DHSIM,
-    }
-
-
-
+    "BF-C2DL-HSC": Loader_BFC2DLHSC,
+    "BF-C2DL-MuSC": Loader_BFC2DLMuSC,
+    "DIC-C2DH-HeLa": Loader_DICC2DHHeLa,
+    "Fluo-C2DL-Huh7": Loader_FluoC2DLHuh7,
+    "Fluo-C2DL-MSC": Loader_FluoC2DLMSC,
+    "Fluo-N2DH-GOWT1": Loader_FluoN2DHGOWT1,
+    "Fluo-N2DL-HeLa": Loader_FluoN2DLHeLa,
+    "PhC-C2DH-U373": Loader_PhCC2DHU373,
+    "PhC-C2DL-PSC": Loader_PhCC2DLPSC,
+    "Fluo-N2DH-SIM": Loader_FluoN2DHSIM,
+}

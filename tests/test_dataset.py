@@ -1,27 +1,28 @@
+import os
+
+import pandas as pd
+
 from pytraction.dataset import Dataset
 
-import os
-import pandas as pd
 
 def test_Dataset_load():
 
-    dataset_path = os.path.join('tests', 'data', 'example_dataset.h5')
+    dataset_path = os.path.join("tests", "data", "example_dataset.h5")
 
     dataset = Dataset(dataset_path)
 
-
     assert len(dataset) == 1
     assert list(dataset.columns) == [
-                        'L', 
-                        'beta', 
-                        'cell_roi', 
-                        'force_field', 
-                        'frame', 
-                        'mask_roi', 
-                        'pos', 
-                        'stack_bead_roi', 
-                        'traction_map', 
-                        'vec',
+        "L",
+        "beta",
+        "cell_roi",
+        "force_field",
+        "frame",
+        "mask_roi",
+        "pos",
+        "stack_bead_roi",
+        "traction_map",
+        "vec",
     ]
 
     assert isinstance(dataset[0], pd.core.frame.DataFrame)
@@ -32,33 +33,32 @@ def test_Dataset_load():
 
 def test_Dataset_metadata():
 
-    dataset_path = os.path.join('tests', 'data', 'example_dataset.h5')
+    dataset_path = os.path.join("tests", "data", "example_dataset.h5")
 
     dataset = Dataset(dataset_path)
 
-    assert hasattr(dataset, 'metadata')
+    assert hasattr(dataset, "metadata")
 
     metadata = dataset.metadata()
 
     assert isinstance(metadata, dict)
 
     keys = [
-        'E', 
-        'coarse_factor', 
-        'dt', 
-        'meshsize', 
-        'min_window_size', 
-        'nb_iter_max', 
-        'overlap_ratio', 
-        'pix_per_mu', 
-        's', 
-        'sig2noise_method', 
-        'tolerance', 
-        'trust_1st_iter', 
-        'validation_iter', 
-        'validation_method',
-        ]
-
+        "E",
+        "coarse_factor",
+        "dt",
+        "meshsize",
+        "min_window_size",
+        "nb_iter_max",
+        "overlap_ratio",
+        "pix_per_mu",
+        "s",
+        "sig2noise_method",
+        "tolerance",
+        "trust_1st_iter",
+        "validation_iter",
+        "validation_method",
+    ]
 
     assert len(metadata) == len(keys)
 
@@ -66,20 +66,18 @@ def test_Dataset_metadata():
         assert key in metadata.keys()
 
 
-
 def test_Dataset_save():
 
-    dataset_path = os.path.join('tests', 'data', 'example_dataset.h5')
+    dataset_path = os.path.join("tests", "data", "example_dataset.h5")
 
     dataset = Dataset(dataset_path)
 
-    assert dataset.save('test.h5') == True
+    assert dataset.save("test.h5") == True
 
 
 def test_Dataset_str():
 
-
-    dataset_path = os.path.join('tests', 'data', 'example_dataset.h5')
+    dataset_path = os.path.join("tests", "data", "example_dataset.h5")
 
     dataset = Dataset(dataset_path)
 

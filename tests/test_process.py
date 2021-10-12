@@ -1,5 +1,2 @@
-from pytraction.process import (
-    iterative_piv,
-    compute_piv,
-    calculate_traction_map,
-)
+from pytraction.process import (calculate_traction_map, compute_piv,
+                                iterative_piv)
