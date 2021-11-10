@@ -141,6 +141,13 @@ def bead_density(img: np.ndarray) -> float:
     Returns:
         float: [description]
     """
+
+    # clahe_img = clahe(normalize(img))
+    # print(clahe_img)
+    # _, norm = cv2.threshold(clahe_img, 127/4, 255, cv2.THRESH_BINARY)
+    # print(norm)
+    # cv2.imwrite('thresh.png', norm)
+
     clahe_img = clahe(normalize(img))
     norm = (
         cv2.adaptiveThreshold(
@@ -216,9 +223,10 @@ def plot(
     im2 = ax[1].imshow(cell_roi, cmap="gray", vmax=np.max(cell_roi))
 
     cbar = fig.colorbar(im1, cax=cax1)
-    cbar.set_label("Traction stress [Pa]", rotation=270, labelpad=20)
+    cbar.set_label("Traction stress [Pa]", rotation=270, labelpad=20, size=20)
+    cbar.ax.tick_params(labelsize=20)
 
     ax[0].set_axis_off()
     ax[1].set_axis_off()
     plt.tight_layout()
-    return fig, ax
+    return ax
