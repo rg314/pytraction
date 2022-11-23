@@ -50,6 +50,8 @@ def compute_piv(img, ref, config):
 
 
 def calculate_traction_map(pos, vec, beta, meshsize, s, pix_per_mu, E):
+    # ensure that vec is in m
+    vec = (vec/pix_per_mu)*1e-6 # displacement in um 
 
     # fourier space
     grid_mat, i_max, j_max, X, fuu, Ftux, Ftuy, u = fourier_xu(
