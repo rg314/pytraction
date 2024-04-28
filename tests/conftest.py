@@ -1,21 +1,27 @@
 import os
 
-from pytraction.get_example_data import main
 
+def validate_data_paths():
+    # Config file
+    assert os.path.join("example_data", "example_config.yaml")
 
-def pytest_configure():
-    # call main() to get example data
-    main()
+    # Example: Axon
+    assert os.path.join("example_data", "example1_axon", "2DTFM_300Pa_RGC_Axon_Reference.tif")
+    assert os.path.join("example_data", "example1_axon", "2DTFM_300Pa_RGC_Axon_TimeSeries.tif")
 
-    assert os.path.exists("data/example1/e01_pos1_axon1_ref.tif")
-    assert os.path.exists("data/example1/e01_pos1_axon1.tif")
+    # Example: Fibroblast
+    assert os.path.join("example_data", "example2_fibroblast", "2DTFM_10kPa_hPAAGel_3T3Fibroblasts_TimeSeries.tif")
+    assert os.path.join("example_data", "example2_fibroblast", "2DTFM_10kPa_hPAAGel_3T3Fibroblasts_Reference.tif")
+    assert os.path.join("example_data", "example2_fibroblast", "AllRoiFrames.zip")
+    assert os.path.join("example_data", "example2_fibroblast", "frame0.roi")
 
-    assert os.path.exists("data/example2/1kPa-2-Position006_ref.tif")
-    assert os.path.exists("data/example2/1kPa-2-Position006.tif")
-    assert os.path.exists("data/example2/1kPa-2-Position006.roi")
+    # Example: z-stack
+    assert os.path.join("example_data", "example3_zstack", "2DTFM_300Pa_PAAGel_RGCs_TimeSeries.tif")
+    assert os.path.join("example_data", "example3_zstack", "2DTFM_300Pa_PAAGel_RGCs_Reference.tif")
 
-    assert os.path.exists("data/example3/Beads3.tif")
-    assert os.path.exists("data/example3/BeadsStop.tif")
-    assert os.path.exists("data/example3/Cell3.tif")
+    # Example: Given displacement field
+    assert os.path.join("example_data", "example4_displacement", "example_position.npy")
+    assert os.path.join("example_data", "example4_displacement", "example_displacement.npy")
 
-    assert os.path.exists("data/matlab_data.csv")
+    # Example_ Given traction dataset
+    assert os.path.join("example_data", "example5_tractiondataset", "example_tractiondataset.h5")

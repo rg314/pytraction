@@ -1,0 +1,42 @@
+piv:
+  # Choose PIV method
+  piv_method: widim
+  # General PIV settings
+  window_size: 64
+  overlap_ratio: 0.5
+  dt: 1
+  subpixel_method: gaussian
+  sig2noise_method: peak2peak
+  sig2noise_threshold: 1.5
+  width: 2
+
+  # Only used for extended_area_piv
+  correlation_method: circular
+  normalized_correlation: False
+  use_vectorized: False
+  outliers_method: localmean
+
+  # Only used for widim_piv
+  coarse_factor: 0
+  validation_method: mean_velocity
+  trust_1st_iter: 0
+  validation_iter: 3
+  tolerance: 1.5
+  nb_iter_max: 1
+
+tfm:
+  # Choose TFM method
+  tfm_method: FT
+  # General TFM settings
+  elastic_modulus: null
+  scaling_factor: null
+  poisson_ratio: 0.5
+  meshsize: 8
+  scaling_z: 1
+
+settings:
+  cell_channel: 0
+  bead_channel: 1
+  segment: False
+  device: cpu
+  crop_aligned_slice: True

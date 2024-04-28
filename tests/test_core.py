@@ -1,141 +1,155 @@
 import os
-import pickle
-import tempfile
-
 import numpy as np
-from scipy.ndimage.measurements import label
-from shapely.geometry import Polygon
+import tifffile
 
-from pytraction.core import (TractionForceConfig, _custom_noise,
-                             _find_uv_outside_single_polygon, _get_noise,
-                             _write_frame_results, _write_metadata_results,
-                             process_stack)
+from pytraction.core import (TractionForceConfig, process_stack)
+from pytraction.tractionforcedataset import TractionForceDataset
 
 
-def test_TractionForceConfig_test_models():
-    E = 100
+def test_config():
+    elastic_modulus = 100
     scaling_factor = 1.3
+    poisson_ratio = 0.48
+    window_size = 16
+    meshsize = 8
+    config_path = os.path.join("example_data", "example_config.yaml")
 
-    config_file = os.path.join("tests", "data", "config.yaml")
+    # Create config instance
+    config = TractionForceConfig(
+        config_path=config_path,
+        elastic_modulus=elastic_modulus,
+        scaling_factor=scaling_factor,
+        poisson_ratio=poisson_ratio,
+        window_size=window_size,
+        meshsize=meshsize
+    )
+    assert config.config["tfm"]["elastic_modulus"] == elastic_modulus
+    assert config.config["tfm"]["scaling_factor"] == scaling_factor
+    assert config.config["tfm"]["poisson_ratio"] == poisson_ratio
+    assert config.config["piv"]["window_size"] == window_size
+    assert config.config["tfm"]["meshsize"] == meshsize
 
-    tf_config = TractionForceConfig(
-        E=E, scaling_factor=scaling_factor, config=config_file, knn=False, cnn=False
+    # No models loaded
+    assert config.cnn is None
+    assert config.pre_fn is None
+    assert config.knn is None
+
+    # Models loaded (segment as kwargs)
+    config = TractionForceConfig(
+        config_path=config_path,
+        elastic_modulus=elastic_modulus,
+        scaling_factor=scaling_factor,
+        poisson_ratio=poisson_ratio,
+        window_size=0,
+        meshsize=meshsize,
+        segment=True
+    )
+    assert config.cnn is not None
+    assert config.pre_fn is not None
+    assert config.knn is not None
+    assert hasattr(config.knn, "predict")
+
+
+def test_load_data():
+    elastic_modulus = 100
+    scaling_factor = 1.3
+    poisson_ratio = 0.48
+    window_size = 16
+    meshsize = 8
+    config_path = os.path.join("example_data", "example_config.yaml")
+
+    # Create config instance
+    config = TractionForceConfig(
+        config_path=config_path,
+        elastic_modulus=elastic_modulus,
+        scaling_factor=scaling_factor,
+        poisson_ratio=poisson_ratio,
+        window_size=window_size,
+        meshsize=meshsize
+    )
+    # Test 2D image data
+    # Write (t,c,w,h) image and (c,w,h) reference stacks
+    img_stack = np.full((3, 2, 100, 100), 255, dtype=np.uint8)
+    img_path = os.path.join("example_data", "example6_simplestacks", "white_t3c2w100h100_stack.tiff")
+    with tifffile.TiffWriter(img_path) as tiff: tiff.write(img_stack)
+
+    ref_stack = np.full((2, 100, 100), 255, dtype=np.uint8)
+    ref_path = os.path.join("example_data", "example6_simplestacks", "white_c2w100h100_stack.tiff")
+    with tifffile.TiffWriter(ref_path) as tiff: tiff.write(ref_stack)
+
+    # Load image data
+    img, ref, roi = config.load_data(img_path, ref_path, roi_path=None, z_proj=False)
+    assert np.array_equal(img_stack, img)
+    assert np.array_equal(ref_stack, ref)
+
+    img, ref, roi = config.load_data(img_path, ref_path, roi_path=None, z_proj=True)
+    assert np.array_equal(img_stack, img)
+    assert np.array_equal(ref_stack, ref)
+
+    # Test z-stack image data
+    # Write (t,z,c,w,h) image and (z,c,w,h) reference stacks
+    img_stack_w = np.full((4, 2, 100, 100), 255, dtype=np.uint8)
+    img_stack_b = np.full((4, 2, 100, 100), 0, dtype=np.uint8)
+    img_stack = np.stack((img_stack_w, img_stack_b, img_stack_w), axis=1)
+    img_path = os.path.join("example_data", "example6_simplestacks", "multi_t4z3c2w100h100_stack.tiff")
+    with tifffile.TiffWriter(img_path) as tiff: tiff.write(img_stack)
+
+    ref_stack_w = np.full((2, 100, 100), 255, dtype=np.uint8)
+    ref_stack_b = np.full((2, 100, 100), 0, dtype=np.uint8)
+    ref_stack = np.stack((ref_stack_w, ref_stack_b, ref_stack_w), axis=0)
+    ref_path = os.path.join("example_data", "example6_simplestacks", "multi_z3c2w100h100_stack.tiff")
+    with tifffile.TiffWriter(ref_path) as tiff: tiff.write(ref_stack)
+
+    # Load image data and test central z-slice extraction
+    img, ref, roi = config.load_data(img_path, ref_path, roi_path=None, z_proj=False)
+    assert np.array_equal(img_stack_b, img)
+    assert np.array_equal(ref_stack_b, ref)
+
+    # Load image data and test z-projection
+    img, ref, roi = config.load_data(img_path, ref_path, roi_path=None, z_proj=True)
+    assert np.array_equal(img_stack_w, img)
+    assert np.array_equal(ref_stack_w, ref)
+
+    # Load ROI
+    img_path = os.path.join("example_data", "example2_fibroblast", "2DTFM_10kPa_hPAAGel_3T3Fibroblasts_TimeSeries.tif")
+    ref_path = os.path.join("example_data", "example2_fibroblast", "2DTFM_10kPa_hPAAGel_3T3Fibroblasts_Reference.tif")
+    roi_path = os.path.join("example_data", "example2_fibroblast", "AllRoiFrames.zip")
+
+    img, ref, roi = config.load_data(img_path, ref_path, roi_path, z_proj=False)
+
+    assert roi is not None
+
+
+def test_process_stack():
+    elastic_modulus = 100
+    scaling_factor = 1.3
+    poisson_ratio = 0.48
+    window_size = 32
+    meshsize = 16
+    config_path = os.path.join("example_data", "example_config.yaml")
+
+    # Create config instance
+    config = TractionForceConfig(
+        config_path=config_path,
+        elastic_modulus=elastic_modulus,
+        scaling_factor=scaling_factor,
+        poisson_ratio=poisson_ratio,
+        window_size=window_size,
+        meshsize=meshsize
     )
 
-    assert tf_config.model == None
-    assert tf_config.pre_fn == None
-    assert tf_config.knn == None
+    img_path = os.path.join("example_data", "example3_zstack", "2DTFM_300Pa_PAAGel_RGCs_TimeSeries.tif")
+    ref_path = os.path.join("example_data", "example3_zstack", "2DTFM_300Pa_PAAGel_RGCs_Reference.tif")
 
-    tf_config = TractionForceConfig(
-        E=E, scaling_factor=scaling_factor, config=config_file, knn=False, cnn=True
-    )
-    assert hasattr(tf_config.model, "predict")
-    assert tf_config.pre_fn != None
-    assert tf_config.knn == None
+    img, ref, roi = config.load_data(img_path=img_path, ref_path=ref_path, roi_path=None, z_proj=True)
 
-    tf_config = TractionForceConfig(
-        E=E, scaling_factor=scaling_factor, config=config_file, knn=True, cnn=False
-    )
-    assert tf_config.model == None
-    assert tf_config.pre_fn == None
-    assert hasattr(tf_config.knn, "predict")
+    log = process_stack(img_stack=img,
+                        ref_stack=ref,
+                        roi=roi,
+                        config=config,
+                        cell_channel=0,
+                        bead_channel=1,
+                        crop=False,
+                        noise=10)
 
-    tf_config = TractionForceConfig(
-        E=E, scaling_factor=scaling_factor, config=config_file, knn=True, cnn=True
-    )
-    assert hasattr(tf_config.model, "predict")
-    assert tf_config.pre_fn != None
-    assert hasattr(tf_config.knn, "predict")
-
-
-def test__custom_noise():
-    # dummy config
-    class Config:
-        def __init__(self) -> None:
-            config = None
-
-    # fix config / using dummy window size of 32
-    config = Config()
-    config.config = {
-        "piv": {
-            "min_window_size": 32,
-            "overlap_ratio": 0.5,
-            "coarse_factor": 0,
-            "dt": 1,
-            "validation_method": "mean_velocity",
-            "trust_1st_iter": 0,
-            "validation_iter": 3,
-            "tolerance": 1.5,
-            "nb_iter_max": 1,
-            "sig2noise_method": "peak2peak",
-        },
-        "tfm": {"E": "None", "s": "None", "meshsize": "None", "pix_per_mu": "None"},
-        "settings": {
-            "bead_channel": 0,
-            "cell_channel": 1,
-            "segment": False,
-            "device": "cpu",
-            "crop_aligned_slice": False,
-        },
-    }
-
-    tmppath = os.path.join("tests", "data", "stack.tiff")
-
-    # test the function
-    beta = _custom_noise(tmppath, config)
-
-    # get the temp dir of the cache
-    tmpdir = tempfile.gettempdir()
-    destination = f"{tmpdir}/tmp_noise.pickle"
-
-    # read in the cached noise
-    with open(destination, "rb") as f:
-        cache = pickle.load(f)
-
-    assert os.path.exists(tmppath)
-    assert os.path.exists(destination)
-    assert beta == 4.010723998246769
-    assert cache[tmppath] == beta
-
-    os.remove(destination)
-
-
-def test__find_uv_outside_single_polygon():
-
-    # function to create circle with radius at center (x,y)
-    def create_circle(radius, center=(10, 10)):
-        theta = np.linspace(0, 2 * np.pi, 30)
-        x = radius * np.cos(theta) + center[0]
-        y = radius * np.sin(theta) + center[1]
-        return x, y
-
-    # create 3 three consentic circles with increasing radii
-    inner_x, inner_y = create_circle(2)
-    polygon_x, polygon_y = create_circle(4)
-    outer_x, outer_y = create_circle(6)
-
-    # create a polygon with middle circle
-    polygon = Polygon(list(zip(polygon_x, polygon_y)))
-
-    # create random u and v vectors
-    u_inner = np.random.randint(0, 100, size=30)
-    u_outer = u_inner + 10
-    v_inner = np.random.randint(0, 100, size=30)
-    v_outer = v_inner + 10
-
-    # join inner and outer circle (x,y,u,v)
-    x = np.concatenate([inner_x, outer_x])
-    y = np.concatenate([inner_y, outer_y])
-    u = np.concatenate([u_inner, u_outer])
-    v = np.concatenate([v_inner, v_outer])
-
-    # test function
-    pts = _find_uv_outside_single_polygon(x, y, u, v, polygon)
-
-    # get the known input
-    pts_test = np.array([u_outer, v_outer]).T
-
-    assert (pts_test == pts).all()
-
-
-test_TractionForceConfig_test_models()
+    assert type(log) is TractionForceDataset

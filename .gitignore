@@ -1,18 +1,11 @@
 # Additional
 building/*
-data/*
-.vscode/*
-data2/*
-*.tif
-*.pth
-*.zip
-examples/data/*
-examples/pytraction/*
-*.h5
-!tests/data/*
+*/prelim_code/
+*/.idea/
 .bash_history/
 .ssh/*
 .vscode-server/*
+.vscode/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

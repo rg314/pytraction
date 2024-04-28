@@ -1,51 +1,73 @@
-import os
-import sys
-from typing import Tuple, Type
-
 import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as sparse
+from scipy.fft import fftfreq, ifft2, fft2
+from typing import Tuple, Type, Union
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.interpolate import griddata
-from scipy.sparse import linalg as splinalg
-
-from pytraction.dataset import Dataset
+from scipy.sparse import linalg
+from scipy.interpolate import interp2d
 
 
-def align_slice(img: np.ndarray, ref: np.ndarray) -> Tuple[int, int, np.ndarray]:
-    """Given a bead image and a ref image compute the drift using cv2.matchTemplate
-    and return the drift corrected image along with the x drift (dx) and y drift (dy).
-    The dx, dy shift is a measure of how much the image has moved with respect to the reference.
-
-
-    Args:
-        img (np.ndarray): input bead image
-        ref (np.ndarray): reference bead image
-
-    Returns:
-        Tuple[int, int, np.ndarray]: dx, dy, and aligned image slice (2, w, h)
+def bead_density(img: np.ndarray) -> float:
     """
-    # amount to reduce template
-    depth = int(min(img.shape) * 0.1)
-
-    # calculate matchTemplate using ccorr_normed method
-    tm_ccorr_normed = cv2.matchTemplate(
-        img, ref[depth:-depth, depth:-depth], cv2.TM_CCORR_NORMED
+    Calculate bead density from image frame.
+    """
+    # Normalize image and enhance grayscale-contrast
+    clahe_img = clahe(img)
+    # Binarize image using threshold and normalize to values between [0, 1]
+    norm = (
+            cv2.adaptiveThreshold(
+                clahe_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 5, 2
+            )
+            / 255
     )
-    max_ccorr = np.unravel_index(
-        np.argmax(tm_ccorr_normed, axis=None), tm_ccorr_normed.shape
-    )
 
-    # shifts in the x and y
-    dy = depth - max_ccorr[0]
-    dx = depth - max_ccorr[1]
+    ones = len(norm[norm == 1])  # Calculate number of beads
 
-    # transformation matrix
-    rows, cols = img.shape
-    M = np.float32([[1, 0, dx], [0, 1, dy]])
-    return dx, dy, cv2.warpAffine(img, M, (cols, rows))
+    # Calculate total area of image and bead density
+    area = img.shape[0] * img.shape[1]
+    area_beads = ones / area
+
+    return area_beads
+
+
+def remove_boarder_from_aligned(aligned_img: np.ndarray, aligned_ref: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Crops black borders from aligned image and returns it together with same size reference.
+    """
+    # Find the indices of non-zero values along rows and columns
+    non_zero_rows = np.where(~np.all(aligned_img == 0, axis=1))[0]
+    non_zero_cols = np.where(~np.all(aligned_img == 0, axis=0))[0]
+
+    # Select only the subarray that excludes the bordering zero rows and columns
+    borderless_img = aligned_img[non_zero_rows[0]:non_zero_rows[-1] + 1, non_zero_cols[0]:non_zero_cols[-1] + 1]
+    borderless_ref = aligned_ref[non_zero_rows[0]:non_zero_rows[-1] + 1, non_zero_cols[0]:non_zero_cols[-1] + 1]
+
+    return borderless_img, borderless_ref
+
+
+def ft_2Dvector_field(pos, vec):
+    # Extract components from displacement vector field
+    xx = pos[:, :, 0]
+    yy = pos[:, :, 1]
+
+    uu = vec[:, :, 0]
+    vv = vec[:, :, 1]
+
+    # Calculate meshsize
+    x_val, y_val = xx[0, :], yy[:, 0]
+    meshsize_x, meshsize_y = x_val[1] - x_val[0], y_val[1] - y_val[0]
+
+    # Return scaled frequency components corresponding to position field
+    k_x, k_y = fftfreq(x_val.shape[0], d=meshsize_x) * 2 * np.pi, fftfreq(y_val.shape[0], d=meshsize_y) * 2 * np.pi
+    kxx, kyy = np.meshgrid(k_x, k_y)
+
+    ft_uu = fft2(uu)  # FT of displacement fields x component
+    ft_vv = fft2(vv)  # FT of displacement fields y component
+
+    return kxx, kyy, ft_uu, ft_vv, meshsize_x, meshsize_y
 
 
 def sparse_cholesky(A):
@@ -60,173 +82,97 @@ def sparse_cholesky(A):
         [type]: [description]
     """
     n = A.shape[0]
-    LU = splinalg.splu(A.tocsc(), diag_pivot_thresh=0)  # sparse LU decomposition
+    LU = linalg.splu(A.tocsc(), diag_pivot_thresh=0)  # sparse LU decomposition
 
     return LU.L.dot(sparse.diags(LU.U.diagonal() ** 0.5)).tocsr()
 
 
-def interp_vec2grid(
-    pos: np.ndarray, vec: np.ndarray, cluster_size: int, grid_mat=np.array([])
-) -> Tuple[np.ndarray, int, int]:
-    """[summary]
-
-    Args:
-        pos (np.ndarray): [description]
-        vec (np.ndarray): [description]
-        cluster_size (int): [description]
-        grid_mat ([type], optional): [description]. Defaults to np.array([]).
-
-    Returns:
-        Tuple[np.ndarray, int, int]: [description]
-    """
-    if not grid_mat:
-        max_eck = [np.max(pos[0]), np.max(pos[1])]
-        min_eck = [np.min(pos[0]), np.min(pos[1])]
-
-        i_max = np.floor((max_eck[0] - min_eck[0]) / cluster_size)
-        j_max = np.floor((max_eck[1] - min_eck[1]) / cluster_size)
-
-        i_max = i_max - np.mod(i_max, 2)
-        j_max = j_max - np.mod(j_max, 2)
-
-        X = min_eck[0] + np.arange(0.5, i_max) * cluster_size
-        Y = min_eck[1] + np.arange(0.5, j_max) * cluster_size
-
-        x, y = np.meshgrid(X, Y)
-
-        grid_mat = np.stack([x, y], axis=2)
-
-        u = griddata(pos.T, vec.T, (x, y), method="cubic")
-
-        return grid_mat, u, int(i_max), int(j_max)
-
-
-def normalize(x: np.ndarray) -> np.ndarray:
-    """[summary]
-
-    Args:
-        x (np.ndarray): [description]
-
-    Returns:
-        np.ndarray: [description]
-    """
-    x = (x - np.min(x)) / (np.max(x) - np.min(x))
-    return np.array(x * 255, dtype="uint8")
-
-
 def clahe(data: np.ndarray) -> np.ndarray:
-    """[summary]
+    img = cv2.cvtColor(data, cv2.COLOR_GRAY2BGR)  # Convert COLOR_GRAY2BGR image to COLOR_BGR2LAB color space
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)  # Convert COLOR_BGR2LAB image to LAB color space
+    l, a, b = cv2.split(lab)  # Separate image into its lightness (L) and color (A and B) components
 
-    Args:
-        data (np.ndarray): [description]
-
-    Returns:
-        np.ndarray: [description]
-    """
-    img = cv2.cvtColor(data, cv2.COLOR_GRAY2BGR)
-    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
+    # Enhance image contrast using Contrast Limited Adaptive Histogram Equalization (CLAHE)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    cl = clahe.apply(l)
-    limg = cv2.merge((cl, a, b))
-    return cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)[:, :, 0]
+    cl = clahe.apply(l)  # Apply CLAHE to L component
+    limg = cv2.merge((cl, a, b))  # Merge modified L channel with original A and B channels
+    return cv2.cvtColor(limg, cv2.COLOR_LAB2RGB)[:, :, 0]  # Convert enhanced LAB image back to RGB color space but
+    # return only the L channel, which is the grayscale-enhanced image.
 
 
-def bead_density(img: np.ndarray) -> float:
-    """[summary]
+# Shape function for boundary element method
+def pyramid2dim(xx, yy, width_x, width_y):
+    return (np.maximum(0, width_x - np.abs(xx)) *
+            np.maximum(0, width_y - np.abs(yy)))
 
-    Args:
-        img (np.ndarray): [description]
 
-    Returns:
-        float: [description]
+def pyramid2dim_ft(kxx, kyy, width_x, width_y):
+    return (width_x * np.sinc(kxx * width_x) *
+            width_y * np.sinc(kyy * width_y)) ** 2
+
+
+# Crate differential operator matrix
+def diff_operator(ft_gxx, ft_gxy, ft_gyy):
+    gamma_1 = ft_gxx.flatten()
+    gamma_2 = ft_gxy.flatten()
+    gamma_3 = gamma_2
+    gamma_4 = ft_gyy.flatten()
+
+    zero_padding = np.zeros(gamma_1.shape)
+    diagonals = np.array([np.concatenate([gamma_1, gamma_4]).flatten(),
+                          np.concatenate([gamma_2, zero_padding]).flatten(),
+                          np.concatenate([gamma_3, zero_padding]).flatten()])
+
+    gamma_glob = sparse.diags(diagonals=diagonals,
+                              offsets=(0, len(gamma_2), -len(gamma_3)),
+                              shape=(2 * len(gamma_1), 2 * len(gamma_1)))
+
+    return gamma_glob
+
+
+# Center 2D array to remove padding
+def center_padding(array2dim, x, y):
+    # Determine the start and end indices to get the central part
+    center_i = (np.shape(array2dim)[0]) // 2
+    center_j = (np.shape(array2dim)[1]) // 2
+
+    result = array2dim[center_i - len(x) // 2: center_i + len(x) // 2,
+             center_j - len(y) // 2: center_j + len(y) // 2]
+    return result
+
+
+def set_cbar_max(figs: list):
     """
-
-    # clahe_img = clahe(normalize(img))
-    # print(clahe_img)
-    # _, norm = cv2.threshold(clahe_img, 127/4, 255, cv2.THRESH_BINARY)
-    # print(norm)
-    # cv2.imwrite('thresh.png', norm)
-
-    clahe_img = clahe(normalize(img))
-    norm = (
-        cv2.adaptiveThreshold(
-            clahe_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 5, 2
-        )
-        / 255
-    )
-
-    ones = len(norm[norm == 1])
-
-    area = img.shape[0] * img.shape[1]
-    area_beads = ones / area
-
-    return area_beads
-
-
-def remove_boarder_from_aligned(aligned_img, aligned_ref):
-    _, thresh = cv2.threshold(aligned_img, 0, 255, cv2.THRESH_BINARY)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnt = sorted(contours, key=lambda x: cv2.contourArea(x))[0]
-    x, y, w, h = cv2.boundingRect(cnt)
-    return aligned_img[y : y + h, x : x + w], aligned_ref[y : y + h, x : x + w]
-
-
-def plot(
-    log: Type[Dataset],
-    frame: int = 0,
-    vmax: float = None,
-    mask: bool = True,
-    figsize: tuple = (16, 16),
-) -> Tuple[mpl.figure.Figure, mpl.axes.Axes]:
-    """[summary]
-
-    Args:
-        log (Type[Dataset]): [description]
-        frame (int, optional): [description]. Defaults to 0.
-        vmax (float, optional): [description]. Defaults to None.
-        mask (bool, optional): [description]. Defaults to True.
-        figsize (tuple, optional): [description]. Defaults to (16,16).
-
-    Returns:
-        Tuple[plt.figure.Figure,plt.axes.Axes]: [description]
+    Get maximum color-bar value of figures in list and applies it to all.
     """
+    max_vmax = 0
+    for fig in figs:
+        cbar = fig.axes[0].collections[0].colorbar
+        vmax = cbar.vmax
+        max_vmax = max(max_vmax, vmax)
 
-    log = log[frame]
-    traction_map = log["traction_map"][0]
-    cell_roi = log["cell_roi"][0]
-    x, y = log["pos"][0]
-    u, v = log["vec"][0]
-    L = log["L"][0]
-    vmax = np.max(traction_map) if not vmax else vmax
+    for fig in figs:
+        cbar = fig.axes[0].collections[0].colorbar
+        cbar.mappable.set_clim(vmin=cbar.vmin, vmax=vmax)
 
-    fig, ax = plt.subplots(1, 2, figsize=figsize)
-    im1 = ax[0].imshow(
-        traction_map,
-        interpolation="bicubic",
-        cmap="jet",
-        extent=[x.min(), x.max(), y.min(), y.max()],
-        vmin=0,
-        vmax=vmax,
-    )
-    ax[0].quiver(x, y, u, v)
+    return figs, vmax
 
-    if mask and log["mask_roi"][0].shape:
-        mask = log["mask_roi"][0]
-        mask = np.ma.masked_where(mask == 255, mask)
-        ax[0].imshow(mask, cmap="jet", extent=[x.min(), x.max(), y.min(), y.max()])
 
-    divider1 = make_axes_locatable(ax[0])
-    cax1 = divider1.append_axes("right", size="5%", pad=0.05)
+def interp_mask2grid(mask: np.ndarray, pos: np.ndarray):
+    # Create grid coordinates for original mask array
+    x_orig = np.linspace(0, 1, mask.shape[0])
+    y_orig = np.linspace(0, 1, mask.shape[1])
 
-    im2 = ax[1].imshow(cell_roi, cmap="gray", vmax=np.max(cell_roi))
+    # Create grid coordinates for target image array
+    x_target = np.linspace(0, 1, pos.shape[0])
+    y_target = np.linspace(0, 1, pos.shape[1])
 
-    cbar = fig.colorbar(im1, cax=cax1)
-    cbar.set_label("Traction stress [Pa]", rotation=270, labelpad=20, size=20)
-    cbar.ax.tick_params(labelsize=20)
+    # Create interpolation function
+    interpolator = interp2d(x_orig, y_orig, mask, kind='linear')
 
-    ax[0].set_axis_off()
-    ax[1].set_axis_off()
-    plt.tight_layout()
-    return ax
+    # Interpolate mask to fit the vector field size
+    interp_mask = interpolator(x_target, y_target)
+
+    interp_mask = np.where(interp_mask > 150, True, False)
+
+    return interp_mask

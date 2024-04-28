@@ -13,7 +13,7 @@ from pytraction.net.formats import DATASETS
 
 class CellTrackPreprocessor:
     """
-    Class used to preprocess datasets and det file for datasets. Here we assume that that each GT track
+    Class used to preprocess datasets and det file for datasets. Here we assume that each GT track
     is the GT for seg and tracking. Datasets from http://celltrackingchallenge.net/2d-datasets/
     """
 
